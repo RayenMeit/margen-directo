@@ -48,6 +48,12 @@ td.n,th.n{text-align:right;font-family:"JetBrains Mono",monospace;white-space:no
 .crumb{color:var(--tx2);font-size:13px;margin-bottom:8px}.crumb a{color:var(--tx2);text-decoration:none}.crumb a:hover{color:var(--ac)}
 .foot{color:var(--tx2);font-size:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:12px}
 .tag{font-size:11px;color:var(--tx2);font-family:"JetBrains Mono",monospace}
+.frm label{display:block;font-size:13px;color:var(--tx2);margin:8px 0}
+.frm input,.frm select,textarea{display:block;width:100%;margin-top:4px;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);font:inherit}
+.frm label.chk{display:flex;align-items:center;gap:8px;color:var(--tx)}.frm label.chk input{width:auto;margin:0}
+textarea{font-family:"JetBrains Mono",monospace;font-size:13px}
+.frm button{margin-top:10px}
+details summary{cursor:pointer}
 @media (max-width:640px){.aviso{grid-template-columns:1fr}.aviso .acts{justify-content:flex-start}header{padding:10px 12px}.kpi{font-size:24px}}
 </style>
 </head>
@@ -122,18 +128,19 @@ async function render(){
   S.route = parse();
   if(S.route.kind==="p" && S.route.id) return renderProyecto(S.route.id, S.route.tab||"cierre");
   if(S.route.kind==="org" && S.route.id) return renderOrg(S.route.id);
+  if(S.route.kind==="nuevo" && S.perfil?.rol==="admin") return renderNuevo();
   return renderHome();
 }
 
 async function renderHome(){
   const admin = S.perfil?.rol==="admin";
-  const q = sb.from("organizaciones").select("id,nombre,tipo,zona,es_demo,proyectos(id,nombre,tipo,estado,fecha_inicio,fecha_fin)").order("nombre");
+  const q = sb.from("organizaciones").select("id,nombre,tipo,zona,es_demo,nda_firmado,proyectos(id,nombre,tipo,estado,fecha_inicio,fecha_fin)").order("nombre");
   const { data:orgs, error } = await q;
   if(error) return showError(error.message);
   if(!admin && orgs?.length===1 && orgs[0].proyectos?.length===1){ location.hash = `#/p/${orgs[0].proyectos[0].id}/cierre`; return; }
-  app.innerHTML = `<h1>${admin?"Cartera":"Tus proyectos"}</h1><p class="hook">${HOOK}</p>
+  app.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap"><h1>${admin?"Cartera":"Tus proyectos"}</h1>${admin?`<a class="btn pri" href="#/nuevo">+ Nuevo cliente o proyecto</a>`:""}</div><p class="hook">${HOOK}</p>
   <div class="grid g2">${(orgs||[]).map(o=>`<div class="card">
-    ${o.es_demo?`<div class="demo">Datos ficticios de demostración</div>`:""}
+    ${o.es_demo?`<div class="demo">Datos ficticios de demostración</div>`:(admin?`<div style="margin-bottom:8px">${o.nda_firmado?`<span class="pill confirmado">NDA firmado</span>`:`<span class="pill alta">Sin NDA: no se cargan documentos</span>`}</div>`:"")}
     <h2>${esc(o.nombre)}</h2><div class="meta" style="color:var(--tx2);font-size:13px;margin-bottom:8px">${esc(o.tipo||"")} · ${esc(o.zona||"")}</div>
     <div class="list">${(o.proyectos||[]).sort((a,b)=>(b.fecha_inicio||"").localeCompare(a.fecha_inicio||"")).map(p=>`<a class="row" href="#/p/${p.id}/cierre"><span class="nm">${esc(p.nombre)}</span><span class="meta">${esc(p.tipo)} · ${esc(p.estado)} · ${fecha(p.fecha_inicio)}</span></a>`).join("")||`<div class="meta">Sin proyectos</div>`}</div>
   </div>`).join("")||`<div class="card">No hay nada asignado a tu usuario todavía.</div>`}</div>
@@ -145,9 +152,10 @@ function foot(){ return `<p class="foot">Estimaciones a partir de los documentos
 
 async function renderProyecto(pid, tab){
   const admin = S.perfil?.rol==="admin";
-  const { data:p, error } = await sb.from("proyectos").select("*, organizaciones(id,nombre,zona,es_demo)").eq("id",pid).maybeSingle();
+  const { data:p, error } = await sb.from("proyectos").select("*, organizaciones(id,nombre,zona,es_demo,nda_firmado)").eq("id",pid).maybeSingle();
   if(error||!p) return showError(error?.message||"Proyecto no encontrado");
   const tabs = [["cierre","Cierre · lo que te quedó"],["plan","Plan · lo que te va a quedar"],["mes","Mes · avisos y sorpresas"],["lineas","Líneas y documentos"]];
+  if(admin) tabs.push(["cargar","＋ Cargar (admin)"]);
   app.innerHTML = `<div class="crumb"><a href="#/">${admin?"Cartera":"Inicio"}</a> › ${esc(p.organizaciones?.nombre||"")}</div>
   ${p.organizaciones?.es_demo?`<div class="demo">Ejemplo ficticio para demostración. Ninguna cifra corresponde a un cliente real.</div>`:""}
   <h1>${esc(p.nombre)}</h1><p class="sub">${esc(p.tipo)} · ${esc(p.estado)} · ${fecha(p.fecha_inicio)}${p.fecha_fin&&p.fecha_fin!==p.fecha_inicio?" → "+fecha(p.fecha_fin):""}</p>
@@ -158,6 +166,111 @@ async function renderProyecto(pid, tab){
   if(tab==="plan") return tabPlan(p, panel, admin);
   if(tab==="mes") return tabMes(p, panel, admin);
   if(tab==="lineas") return tabLineas(p, panel, admin);
+  if(tab==="cargar" && admin) return tabCargar(p, panel);
+}
+
+// ---------- ADMIN: alta de cliente y proyecto
+async function renderNuevo(){
+  const { data:orgs } = await sb.from("organizaciones").select("id,nombre,es_demo").order("nombre");
+  app.innerHTML = `<div class="crumb"><a href="#/">Cartera</a> › Nuevo</div><h1>Nuevo cliente o proyecto</h1>
+  <p class="sub">Para un cierre gratis: organización + el evento ya hecho. Sin NDA firmado se crea la ficha, pero no se pueden cargar documentos ni líneas.</p>
+  <form id="fn" class="card frm">
+    <h2>Organización</h2>
+    <label>Existente<select name="org_id"><option value="">— nueva organización —</option>${(orgs||[]).filter(o=>!o.es_demo).map(o=>`<option value="${o.id}">${esc(o.nombre)}</option>`).join("")}</select></label>
+    <div class="g2 grid">
+      <label>Nombre (si es nueva)<input name="org_nombre" placeholder="Productora, promotora, sala, banda…"></label>
+      <label>Tipo<select name="org_tipo">${["productora","promotora","management","banda","sala","freelance","otro"].map(t=>`<option>${t}</option>`).join("")}</select></label>
+      <label>Zona<input name="zona" placeholder="Galicia, Madrid…"></label>
+      <label>Tramo<select name="tramo"><option value="5">Freelance (hasta 5 documentos)</option><option value="10">10</option><option value="15">Empresa (hasta 15)</option></select></label>
+    </div>
+    <label class="chk"><input type="checkbox" name="nda_firmado"> NDA firmado (sin esto no se carga nada real)</label>
+    <h2 style="margin-top:16px">Proyecto</h2>
+    <div class="g2 grid">
+      <label>Nombre del evento o gira<input name="proyecto" required></label>
+      <label>Tipo<select name="proyecto_tipo">${["evento","gira","temporada","servicio"].map(t=>`<option>${t}</option>`).join("")}</select></label>
+      <label>Estado<select name="estado"><option>cerrado</option><option>en_curso</option><option>planificado</option></select></label>
+      <label>Fecha de inicio<input type="date" name="fecha_inicio"></label>
+      <label>Fecha de fin<input type="date" name="fecha_fin"></label>
+      <label>Sede o recinto<input name="sede" placeholder="Opcional"></label>
+      <label>Ciudad<input name="ciudad" placeholder="Opcional"></label>
+      <label>Aforo<input type="number" name="aforo" min="0"></label>
+    </div>
+    <label>Notas<input name="notas" placeholder="Qué entregó el cliente, plazo de 72 h, etc."></label>
+    <button class="btn pri">Crear y pasar a cargar líneas</button><div class="msg" id="fnm"></div>
+  </form>`;
+  $("#fn").onsubmit = async e=>{
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(e.target).entries());
+    d.nda_firmado = !!e.target.nda_firmado.checked;
+    $("#fnm").textContent = "Creando…";
+    const { data:pid, error } = await sb.rpc("alta_proyecto", { d });
+    if(error){ $("#fnm").className="msg err"; $("#fnm").textContent = error.message; return; }
+    location.hash = `#/p/${pid}/cargar`;
+  };
+}
+
+// ---------- ADMIN: cargar líneas, NDA, acceso del cliente, sorpresas
+const COLS = ["tipo","familia","descripcion","proveedor","cantidad","unidad","dias","precio_unit","documento","tipo_documento","fecha_documento","fase","sede"];
+const ALIAS = {"concepto":"descripcion","partida":"descripcion","descripción":"descripcion","precio":"precio_unit","precio unitario":"precio_unit","€/ud":"precio_unit","días":"dias","ud":"unidad","uds":"cantidad","cant":"cantidad","factura":"documento","nº":"documento","numero":"documento","número":"documento","doc":"documento","tipo documento":"tipo_documento","fecha":"fecha_documento","proveedor/cliente":"proveedor","tercero":"proveedor"};
+function parsePegado(txt){
+  const filas = txt.replace(/\r/g,"").split("\n").filter(l=>l.trim());
+  if(!filas.length) return [];
+  const sep = filas[0].includes("\t") ? "\t" : (filas[0].split(";").length > filas[0].split(",").length ? ";" : ",");
+  const cab = filas[0].split(sep).map(c=>c.trim().toLowerCase());
+  const conCab = cab.some(c=>COLS.includes(c) || ALIAS[c]);
+  const nombres = conCab ? cab.map(c=>ALIAS[c]||c) : COLS;
+  return (conCab ? filas.slice(1) : filas).map(l=>{ const v=l.split(sep); const o={}; nombres.forEach((n,i)=>{ if(COLS.includes(n)) o[n]=(v[i]??"").trim(); }); return o; });
+}
+async function tabCargar(p, panel){
+  const org = p.organizaciones || {};
+  const real = !org.es_demo;
+  const { data:cat } = await sb.rpc("catalogo_familias");
+  const fams = (cat||[]).map(c=>c.familia);
+  panel.innerHTML = `<div class="grid g2">
+    <div class="card"><h2>1 · NDA y acceso del cliente</h2>
+      ${real ? (org.nda_firmado ? `<p><span class="pill confirmado">NDA firmado</span></p>` : `<p><span class="pill alta">Sin NDA</span> No se pueden cargar documentos ni dar acceso.</p><button class="btn" id="nda">Marcar NDA firmado (ya lo tengo firmado)</button>`) : `<p class="msg">Organización de demostración.</p>`}
+      <form id="fa" class="frm" style="margin-top:14px"><label>Correo del cliente<input type="email" name="email" required placeholder="cliente@empresa.es"></label><label>Nombre<input name="nombre" placeholder="Opcional"></label><button class="btn">Dar acceso (verá solo su organización)</button><div class="msg" id="fam"></div></form>
+      <p class="msg">El cliente entra en app.brainstreaming.tech con su correo y un enlace; sin contraseña.</p>
+    </div>
+    <div class="card"><h2>3 · Sorpresas del evento</h2>
+      <form id="fi" class="frm"><label>Qué pasó<input name="titulo" required placeholder="Ej.: segundo grupo electrógeno a última hora"></label><label>Detalle<input name="detalle"></label>
+      <div class="grid g2"><label>Importe estimado (€)<input name="importe_est" type="number" step="0.01"></label><label>Quién lo paga<select name="asume"><option value="nosotros">nosotros</option><option value="proveedor">proveedor</option><option value="recinto">recinto</option><option value="seguro">seguro</option><option value="no_se">sin decidir</option></select></label></div>
+      <button class="btn">Añadir sorpresa</button><div class="msg" id="fim"></div></form>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px"><h2>2 · Pegar líneas desde Excel</h2>
+    <p class="msg">Copia las filas en Excel (con o sin cabecera) y pégalas aquí. Columnas en este orden si no hay cabecera: <span class="mono">${COLS.join(" · ")}</span>. «tipo» = compra (coste) o venta (ingreso). Los documentos se crean por su número y las sedes por su nombre. Decimales con coma o punto.</p>
+    <textarea id="tx" rows="8" placeholder="tipo	familia	descripcion	proveedor	cantidad	unidad	dias	precio_unit	documento"></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn" id="prev">Previsualizar</button><button class="btn pri" id="imp" disabled>Importar y recalcular avisos</button><a class="btn ghost" href="#/p/${p.id}/cierre">Ver cierre</a></div>
+    <div id="pv" style="margin-top:12px"></div>
+    <details style="margin-top:10px"><summary class="msg">Familias de la base de precios (${fams.length}) y unidades</summary><div class="msg mono" style="line-height:1.8">${(cat||[]).map(c=>`${esc(c.familia)} <span style="opacity:.6">(${(c.unidades||[]).join(", ")})</span>`).join("<br>")}</div></details>
+  </div>`;
+  const nda = $("#nda"); if(nda) nda.onclick = async ()=>{ if(!confirm("¿Confirmas que el NDA con esta organización está firmado por ambas partes?")) return; const { error } = await sb.rpc("marcar_nda",{ oid: org.id, firmado: true }); if(error) alert(error.message); else renderProyecto(p.id,"cargar"); };
+  $("#fa").onsubmit = async e=>{ e.preventDefault(); const f=Object.fromEntries(new FormData(e.target).entries()); $("#fam").className="msg"; $("#fam").textContent="Creando acceso…";
+    const { data, error } = await sb.functions.invoke("invitar-cliente", { body:{ email:f.email, nombre:f.nombre||undefined, org_id: org.id } });
+    if(error){ let m=error.message; try{ m=(await error.context.json()).error||m; }catch(_){} $("#fam").className="msg err"; $("#fam").textContent=m; return; }
+    $("#fam").textContent = `Hecho: ${data.email} ${data.existente?"(ya existía) ":""}tiene acceso a ${data.org}. Avísale de que entre en app.brainstreaming.tech.`; e.target.reset(); };
+  $("#fi").onsubmit = async e=>{ e.preventDefault(); const f=Object.fromEntries(new FormData(e.target).entries());
+    const { error } = await sb.from("incidencias").insert({ proyecto_id:p.id, titulo:f.titulo, detalle:f.detalle||null, importe_est:f.importe_est?Number(f.importe_est):null, asume:f.asume, estado:"abierta" });
+    $("#fim").className = error?"msg err":"msg"; $("#fim").textContent = error?error.message:"Añadida. Se verá en «Mes · avisos y sorpresas»."; if(!error) e.target.reset(); };
+  let filas = [];
+  $("#prev").onclick = ()=>{
+    filas = parsePegado($("#tx").value);
+    const malas = filas.filter(f=>!f.descripcion);
+    const raras = filas.filter(f=>f.familia && !fams.includes(f.familia.toUpperCase()));
+    const tot = filas.reduce((a,f)=>{ const imp=(parseFloat((f.cantidad||"1").replace(",","."))||0)*(parseFloat((f.dias||"1").replace(",","."))||0)*(parseFloat((f.precio_unit||"0").replace(",","."))||0); if((f.tipo||"compra").toLowerCase().startsWith("v")||/ingreso/i.test(f.tipo||"")) a.v+=imp; else a.c+=imp; return a; },{c:0,v:0});
+    $("#pv").innerHTML = `<p class="msg">${filas.length} filas · costes ${eur(tot.c)} · ingresos ${eur(tot.v)}${malas.length?` · <span class="neg">${malas.length} sin descripción (se rechazarán)</span>`:""}${raras.length?` · <span class="mid">${raras.length} con familia fuera de la base (sin comparación de precio)</span>`:""}</p>
+    <div style="overflow:auto;max-height:320px"><table><tr>${COLS.slice(0,9).map(c=>`<th>${c}</th>`).join("")}</tr>${filas.slice(0,50).map(f=>`<tr>${COLS.slice(0,9).map(c=>`<td class="${["cantidad","dias","precio_unit"].includes(c)?"n":""}${c==="familia"&&f.familia&&!fams.includes(f.familia.toUpperCase())?" mid":""}">${esc(f[c]||"")}</td>`).join("")}</tr>`).join("")}</table></div>`;
+    $("#imp").disabled = !filas.length || malas.length>0;
+  };
+  $("#imp").onclick = async ()=>{
+    $("#imp").disabled = true; $("#pv").insertAdjacentHTML("afterbegin", `<p class="msg" id="impm">Importando…</p>`);
+    const { data, error } = await sb.rpc("importar_lineas", { pid:p.id, filas });
+    if(error){ $("#impm").className="msg err"; $("#impm").textContent=error.message; $("#imp").disabled=false; return; }
+    const { data:n } = await sb.rpc("calcular_avisos", { pid:p.id });
+    $("#impm").textContent = `Importadas ${data.lineas} líneas · ${data.documentos_nuevos} documentos nuevos · ${n??0} avisos nuevos. `; $("#impm").insertAdjacentHTML("beforeend", `<a href="#/p/${p.id}/cierre">Ver el cierre →</a>`);
+    $("#tx").value=""; filas=[];
+  };
 }
 
 async function tabCierre(p, panel){
