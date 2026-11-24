@@ -1,0 +1,4 @@
+# Sin conversion de finales de linea: la huella SRI de vendor/ se calcula sobre los bytes exactos que sirve GitHub Pages.
+*.js -text
+vendor/** -text
+*.woff2 binary
