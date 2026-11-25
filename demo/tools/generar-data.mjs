@@ -5,16 +5,17 @@
 // Correcciones que aplica (defectos de datos detectados el 25/11):
 //  1. Base de cada documento = suma de sus líneas; IVA y total recalculados con el mismo tipo de IVA del documento.
 //     Los costes del evento NO cambian: salen de las líneas, no de las bases.
-//  2. Líneas sin documento: se publican con doc = null y la página dice «Sin documento todavía». (Asignarles un
-//     documento de ejemplo es decisión de Diego.)
+//  2. Líneas sin documento: documentos de ejemplo decididos por Diego (DOCS_EJEMPLO), con base = suma de sus líneas.
+//     La dirección de producción propia se queda sin documento, con su etiqueta (SIN_DOC).
 //  3. Número de documento que no parece de factura: se usa el número propuesto del archivo (numero_propuesto).
 //  4. Los dos avisos de precio del grupo electrógeno se publican cada uno con su documento (no se deduplican).
 //  5. La incidencia «segundo grupo electrógeno» repetía la cifra del aviso de partida duplicada: se retira; el aviso
 //     cuenta la historia completa (presupuesto con 2 grupos × 3 días; la factura vuelve a cobrar la misma partida).
-//  6. Avisos con referencia débil o incorrecta: fuera por defecto (AVISOS_PUBLICOS). Pendiente de Diego.
+//  6. Avisos con referencia débil o incorrecta: fuera (AVISOS_PUBLICOS; decisión de Diego).
 //  7. Nombres de proveedores: solo los ficticios del archivo; lo comprueba tools/comprobar-publico.mjs.
-//  8. Origen de cada aviso: documento, línea, pagado, desvío, N de precios. La referencia y el rango NO se publican
-//     mientras Diego no decida cómo (REFERENCIAS = 'a': solo desvío en % y en €).
+//  8. Origen de cada aviso: documento, línea, pagado, desvío, N de precios. Referencia (decisión de Diego, opción b
+//     limitada): solo en REFERENCIAS_B, redondeada (a 0,50 € por debajo de 20 €; al euro por encima), sin rango ni zona.
+// Además: SEVERIDAD de cada aviso (el origen no la trae; valores del servidor), que decide «mitigar» o «vigilar» en el plan.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,9 +23,21 @@ import { fileURLToPath } from 'node:url';
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const DEMO = path.resolve(AQUI, '..');
 
-// ── Decisiones pendientes de Diego: valores por defecto conservadores (reversibles; publicar no lo es) ──
-const AVISOS_PUBLICOS = ['A01', 'A02', 'A03', 'A04', 'A05', 'A06', 'A07']; // defecto 6
-const REFERENCIAS = 'a';                                                      // §8.1: a | b | c (solo 'a' implementada)
+// ── Decisiones de Diego (25/11) ──
+const AVISOS_PUBLICOS = ['A01', 'A02', 'A03', 'A04', 'A05', 'A06', 'A07']; // defecto 6: A08–A12 fuera
+const REFERENCIAS = 'b';                                                      // §8.1: b limitada a REFERENCIAS_B
+const REFERENCIAS_B = ['A01', 'A03', 'A04'];
+// Severidad en el servidor (leída en Supabase por Cowork el 25/11; el archivo de origen no la trae)
+const SEVERIDAD = { A01: 'alta', A02: 'alta', A03: 'alta', A04: 'alta', A05: 'media', A06: 'media', A07: 'alta' };
+// Documentos de ejemplo para las líneas que no tenían (defecto 2). IVA 21 %, salvo la subvención (sin IVA).
+const DOCS_EJEMPLO = [
+  { ref: 'D6', tipo: 'otro', etiqueta: 'Contratos de actuación', numero: 'CA-2026-01 a 05', tercero: 'Varios', iva_pct: 21, lineas: ['L01'] },
+  { ref: 'D7', tipo: 'factura_recibida', numero: 'F-AV-2026/118', tercero: 'AV Demo', iva_pct: 21, lineas: ['L02'] },
+  { ref: 'D8', tipo: 'otro', etiqueta: 'Contrato de patrocinio', numero: 'PAT-2026-03', tercero: 'Patrocinador Demo', iva_pct: 21, lineas: ['V2'] },
+  { ref: 'D9', tipo: 'otro', etiqueta: 'Resolución de subvención', numero: 'SUB-2026-14', tercero: 'Concello Ejemplo', iva_pct: 0, lineas: ['V3'] },
+  { ref: 'D10', tipo: 'otro', etiqueta: 'Contrato de barras', numero: 'BAR-2026-01', tercero: 'Hostelería Demo', iva_pct: 21, lineas: ['V4'] },
+];
+const SIN_DOC = { L04: 'Coste propio · sin documento' };
 const COLCHONES = [0, 5, 8, 10];
 
 const ruta = process.argv[2];
@@ -46,6 +59,19 @@ const compra = o.lineas_compra.map((l) => {
            unidad: l.unidad, dias: l.dias, precio_unit: l.precio_unit, importe: l.importe, fase: l.fase, doc: l.doc };
 });
 const ingreso = o.lineas_ingreso.map((l) => ({ id: l.id, familia: l.familia, descripcion: l.descripcion, importe: l.importe, doc: l.doc }));
+for (const d of DOCS_EJEMPLO) for (const id of d.lineas) {
+  const l = [...compra, ...ingreso].find((x) => x.id === id);
+  if (!l) fail(`documento de ejemplo ${d.numero}: línea ${id} inexistente`);
+  if (l.doc) fail(`la línea ${id} ya tenía documento`);
+  l.doc = d.ref;
+}
+for (const [id, etiqueta] of Object.entries(SIN_DOC)) {
+  const l = compra.find((x) => x.id === id);
+  if (!l || l.doc) fail(`SIN_DOC: la línea ${id} no existe o tiene documento`);
+  l.sin_doc = etiqueta;
+}
+const huerfanas = [...compra, ...ingreso].filter((l) => !l.doc && !l.sin_doc).map((l) => l.id);
+if (huerfanas.length) fail(`líneas sin documento ni etiqueta: ${huerfanas.join(', ')}`);
 
 // Documentos (defectos 1 y 3)
 const documentos = o.documentos.map((d) => {
@@ -54,14 +80,21 @@ const documentos = o.documentos.map((d) => {
   const iva = Math.round(suma * ivaPct / 100);
   return { ref: d.ref, tipo: d.tipo, numero: d.numero_propuesto || d.numero, fecha: d.fecha, tercero: d.tercero,
            base: eur(suma), iva_pct: ivaPct, iva: eur(iva), total: eur(suma + iva) };
-});
+}).concat(DOCS_EJEMPLO.map((d) => {
+  const suma = [...compra, ...ingreso].filter((l) => l.doc === d.ref).reduce((s, l) => s + cts(l.importe), 0);
+  const iva = Math.round(suma * d.iva_pct / 100);
+  const out = { ref: d.ref, tipo: d.tipo, numero: d.numero, fecha: null, tercero: d.tercero, base: eur(suma), iva_pct: d.iva_pct, iva: eur(iva), total: eur(suma + iva), ejemplo: true };
+  if (d.etiqueta) out.etiqueta = d.etiqueta;
+  return out;
+}));
 
 // Avisos (defectos 4, 6 y 8)
 const linea = Object.fromEntries(compra.map((l) => [l.id, l]));
 const docNum = Object.fromEntries(documentos.map((d) => [d.ref, d.numero]));
 const avisos = o.avisos.filter((a) => AVISOS_PUBLICOS.includes(a.id)).map((a) => {
   const l = linea[a.linea];
-  const base = { id: a.id, codigo: a.codigo, linea: a.linea, doc: a.doc, estado_inicial: a.estado_servidor, eur: a.eur };
+  if (!SEVERIDAD[a.id]) fail(`falta la severidad del aviso ${a.id}`);
+  const base = { id: a.id, codigo: a.codigo, linea: a.linea, doc: a.doc, estado_inicial: a.estado_servidor, severidad: SEVERIDAD[a.id], eur: a.eur };
   if (a.codigo === 'D03') {
     const dup = compra.filter((x) => x.descripcion === l.descripcion);
     const [pres, fact] = [dup.find((x) => x.doc && docNum[x.doc] && o.documentos.find((d) => d.ref === x.doc).tipo === 'presupuesto_proveedor'),
@@ -76,7 +109,14 @@ const avisos = o.avisos.filter((a) => AVISOS_PUBLICOS.includes(a.id)).map((a) =>
   const out = { ...base, pagado: a.pagado, desviacion_pct: a.desviacion_pct, n_precios: a.n_precios,
     titulo: `${l.descripcion} a ${a.pagado}: un ${a.desviacion_pct} % por encima de la referencia` };
   if (a.justificacion) out.justificacion = a.justificacion;
-  if (REFERENCIAS !== 'a') fail('solo está implementada la opción a (referencias sin publicar)');
+  if (REFERENCIAS === 'b' && REFERENCIAS_B.includes(a.id)) {
+    const m = String(a.referencia).match(/^([\d.]+(?:,\d+)?)\s*(.*)$/);
+    if (!m) fail(`no entiendo la referencia del aviso ${a.id}`);
+    const valor = Number(m[1].replace(/\./g, '').replace(',', '.'));
+    const redondeo = valor < 20 ? Math.round(valor * 2) / 2 : Math.round(valor);
+    const txt = Number.isInteger(redondeo) ? String(redondeo) : redondeo.toFixed(2).replace('.', ',');
+    out.referencia_aprox = `≈ ${txt} ${m[2]}`.trim();
+  } else if (REFERENCIAS !== 'a' && REFERENCIAS !== 'b') fail('opción de referencias no implementada');
   return out;
 });
 for (const a of avisos) if (!linea[a.linea]) fail(`el aviso ${a.id} apunta a una línea inexistente`);

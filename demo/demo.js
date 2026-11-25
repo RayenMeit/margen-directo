@@ -14,7 +14,7 @@ const ORDEN_ACCIONES = ['confirmado', 'justificado', 'no_aplica', 'detectado'];
 const TIPO_DOC = { presupuesto_proveedor: 'Presupuesto de proveedor', factura_recibida: 'Factura recibida', liquidacion: 'Liquidación', factura_emitida: 'Factura emitida', otro: 'Documento' };
 const RIESGO = {
   mitigar: ['Mitigar', 'Hubo aviso confirmado: ya va al precio de referencia. Cambia de proveedor o negocia.'],
-  vigilar: ['Vigilar', 'Hay un aviso por revisar: pide una segunda oferta antes de firmar.'],
+  vigilar: ['Vigilar', 'Hay un aviso por revisar o confirmado de gravedad media: pide una segunda oferta antes de firmar.'],
   asumir: ['Asumir', 'Sin avisos que cuenten: se mantiene el precio del último evento.'],
 };
 
@@ -40,10 +40,11 @@ function h(tag, attrs = {}, ...hijos) {
   return el;
 }
 
-function docTexto(ref) {
-  if (!ref) return h('span', { class: 'sindoc' }, 'Sin documento todavía');
+const tipoDoc = (d) => d.etiqueta || TIPO_DOC[d.tipo] || 'Documento';
+function docTexto(ref, linea) {
+  if (!ref) return h('span', { class: 'sindoc' }, (linea && linea.sin_doc) || 'Sin documento todavía');
   const d = docPorRef[ref];
-  return `${d.numero} · ${TIPO_DOC[d.tipo] || 'Documento'}`;
+  return `${d.numero} · ${tipoDoc(d)}`;
 }
 
 // ── franja fija ──
@@ -73,15 +74,15 @@ function vistaEntra(main) {
       h('div', { class: 'tarjeta' }, h('dt', {}, 'Quedó'), h('dd', { class: 'num' }, euros(k.resultado)), h('dd', { class: 'sub' }, `margen ${String(k.margen_pct).replace('.', ',')} % sobre ingresos`))),
     h('p', { class: 'nota' }, 'Cada cifra sale de una línea. Donde todavía no hay documento detrás, se dice.'),
     h('h2', {}, 'Ingresos'),
-    lista(data.lineas_ingreso.map((l) => fila(l.descripcion, euros(L.c(l.importe)), docTexto(l.doc)))),
+    lista(data.lineas_ingreso.map((l) => fila(l.descripcion, euros(L.c(l.importe)), docTexto(l.doc, l)))),
     h('h2', {}, `Costes (${data.lineas_compra.length} líneas)`),
     lista(data.lineas_compra.map((l) => fila(l.descripcion, euros(L.c(l.importe)),
-      [`${l.proveedor} · ${miles(l.cantidad)} ${l.unidad}${l.dias > 1 ? ` × ${l.dias} días` : ''} a ${precio(l.precio_unit)} · `, docTexto(l.doc)]))),
+      [`${l.proveedor} · ${miles(l.cantidad)} ${l.unidad}${l.dias > 1 ? ` × ${l.dias} días` : ''} a ${precio(l.precio_unit)} · `, docTexto(l.doc, l)]))),
     h('h2', {}, 'Documentos'),
     lista(data.documentos.map((d) => {
       const n = [...data.lineas_compra, ...data.lineas_ingreso].filter((l) => l.doc === d.ref).length;
-      return fila(`${d.numero} · ${TIPO_DOC[d.tipo] || 'Documento'}`, euros(L.c(d.total)),
-        `${d.tercero} · ${fecha(d.fecha)} · base ${euros(L.c(d.base))} (suma de sus ${n} línea${n === 1 ? '' : 's'}) + IVA ${d.iva_pct} % ${euros(L.c(d.iva))}`);
+      return fila(`${d.numero} · ${tipoDoc(d)}`, euros(L.c(d.total)),
+        `${d.tercero}${d.fecha ? ` · ${fecha(d.fecha)}` : ''} · base ${euros(L.c(d.base))} (suma de sus ${n} línea${n === 1 ? '' : 's'}) + ${d.iva_pct ? `IVA ${d.iva_pct} % ${euros(L.c(d.iva))}` : 'sin IVA'}`);
     })),
     h('h2', {}, 'Sorpresas del evento'),
     h('p', { class: 'nota' }, 'Estimaciones abiertas: no cambian el resultado hasta que se cierren.'),
@@ -114,21 +115,23 @@ function tarjetaAviso(a) {
   const origen = [];
   if (a.codigo === 'D03') {
     const dup = lineaPorId[a.linea_duplicada];
-    origen.push(['Documentos', `${docPorRef[dup.doc].numero} (${TIPO_DOC[docPorRef[dup.doc].tipo].toLowerCase()}) y ${docPorRef[a.doc].numero} (${TIPO_DOC[docPorRef[a.doc].tipo].toLowerCase()})`]);
+    origen.push(['Documentos', `${docPorRef[dup.doc].numero} (${tipoDoc(docPorRef[dup.doc]).toLowerCase()}) y ${docPorRef[a.doc].numero} (${tipoDoc(docPorRef[a.doc]).toLowerCase()})`]);
     origen.push(['Línea', `${l.descripcion} · ${l.cantidad} × ${l.dias} días a ${precio(l.precio_unit)} = ${euros(L.c(l.importe))}, en los dos`]);
     origen.push(['Contado de más', euros(L.c(a.eur))]);
   } else {
-    origen.push(['Documento', docTexto(a.doc)]);
+    origen.push(['Documento', docTexto(a.doc, l)]);
     origen.push(['Línea', `${l.descripcion} · ${miles(l.cantidad)} ${l.unidad}${l.dias > 1 ? ` × ${l.dias} días` : ''} = ${euros(L.c(l.importe))}`]);
     origen.push(['Pagado', a.pagado]);
     origen.push(['Por encima de la referencia', `+${a.desviacion_pct} % · ${euros(L.c(a.eur))}`]);
-    origen.push(['Precios comparados', `${a.n_precios} del sector`]);
+    if (a.referencia_aprox) origen.push(['Referencia', `${a.referencia_aprox} (${a.n_precios} precios del sector)`]);
+    else origen.push(['Precios comparados', `${a.n_precios} del sector`]);
   }
   const titId = `t-${a.id}`;
   return h('li', { class: `aviso est-${e}`, id: `aviso-${a.id}`, 'aria-labelledby': titId },
     h('div', { class: 'aviso-cab' },
       h('span', { class: `estado est-${e}` }, ETIQUETA[e]),
-      h('span', { class: 'codigo' }, a.codigo === 'D03' ? 'Partida duplicada' : 'Precio')),
+      h('span', { class: 'codigo' }, a.codigo === 'D03' ? 'Partida duplicada' : 'Precio'),
+      h('span', { class: 'codigo' }, `Gravedad ${a.severidad}`)),
     h('h2', { class: 'aviso-t', id: titId, tabindex: '-1' }, a.titulo),
     a.detalle ? h('p', { class: 'aviso-d' }, a.detalle) : null,
     h('dl', { class: 'origen' }, origen.map(([k, v]) => h('div', {}, h('dt', {}, k), h('dd', {}, v)))),
@@ -174,7 +177,14 @@ function vistaQueda(main) {
     h('dl', { class: 'tarjetas', id: 'plan-cifras' }, cifrasPlan(pl)),
     h('h3', {}, 'Partidas por riesgo'),
     h('ul', { class: 'lista riesgos', id: 'plan-riesgos' }, riesgos(pl)),
+    h('div', { id: 'plan-fuera' }, fueraPlan(pl)),
   );
+}
+
+function fueraPlan(pl) {
+  if (!pl.fuera.length) return [];
+  return [h('p', { class: 'nota' }, ...pl.fuera.map((l) =>
+    `Fuera del plan: ${l.descripcion} del ${tipoDoc(docPorRef[l.doc]).toLowerCase()} ${docPorRef[l.doc].numero} (${euros(L.c(l.importe))}). Es la misma partida que la factura y el aviso de partida duplicada está confirmado: se presupuesta una sola vez.`))];
 }
 
 function cifrasPlan(pl) {
@@ -210,6 +220,7 @@ function cambiarColchon(ev) {
   const pl = L.plan(data, estado.avisos, estado.colchon);
   $('#plan-cifras').replaceChildren(...cifrasPlan(pl));
   $('#plan-riesgos').replaceChildren(...riesgos(pl));
+  $('#plan-fuera').replaceChildren(...fueraPlan(pl));
   anunciar(`Colchón del ${estado.colchon} %: resultado previsto ${euros(pl.resultado)}.`);
 }
 

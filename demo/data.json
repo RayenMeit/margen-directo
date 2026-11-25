@@ -61,6 +61,70 @@
       "iva_pct": 10,
       "iva": 6125,
       "total": 67375
+    },
+    {
+      "ref": "D6",
+      "tipo": "otro",
+      "numero": "CA-2026-01 a 05",
+      "fecha": null,
+      "tercero": "Varios",
+      "base": 38000,
+      "iva_pct": 21,
+      "iva": 7980,
+      "total": 45980,
+      "ejemplo": true,
+      "etiqueta": "Contratos de actuación"
+    },
+    {
+      "ref": "D7",
+      "tipo": "factura_recibida",
+      "numero": "F-AV-2026/118",
+      "fecha": null,
+      "tercero": "AV Demo",
+      "base": 21500,
+      "iva_pct": 21,
+      "iva": 4515,
+      "total": 26015,
+      "ejemplo": true
+    },
+    {
+      "ref": "D8",
+      "tipo": "otro",
+      "numero": "PAT-2026-03",
+      "fecha": null,
+      "tercero": "Patrocinador Demo",
+      "base": 25000,
+      "iva_pct": 21,
+      "iva": 5250,
+      "total": 30250,
+      "ejemplo": true,
+      "etiqueta": "Contrato de patrocinio"
+    },
+    {
+      "ref": "D9",
+      "tipo": "otro",
+      "numero": "SUB-2026-14",
+      "fecha": null,
+      "tercero": "Concello Ejemplo",
+      "base": 15000,
+      "iva_pct": 0,
+      "iva": 0,
+      "total": 15000,
+      "ejemplo": true,
+      "etiqueta": "Resolución de subvención"
+    },
+    {
+      "ref": "D10",
+      "tipo": "otro",
+      "numero": "BAR-2026-01",
+      "fecha": null,
+      "tercero": "Hostelería Demo",
+      "base": 22600,
+      "iva_pct": 21,
+      "iva": 4746,
+      "total": 27346,
+      "ejemplo": true,
+      "etiqueta": "Contrato de barras"
     }
   ],
   "lineas_compra": [
@@ -75,7 +139,7 @@
       "precio_unit": 38000,
       "importe": 38000,
       "fase": "evento",
-      "doc": null
+      "doc": "D6"
     },
     {
       "id": "L02",
@@ -88,7 +152,7 @@
       "precio_unit": 21500,
       "importe": 21500,
       "fase": "evento",
-      "doc": null
+      "doc": "D7"
     },
     {
       "id": "L03",
@@ -114,7 +178,8 @@
       "precio_unit": 4200,
       "importe": 4200,
       "fase": "preproduccion",
-      "doc": null
+      "doc": null,
+      "sin_doc": "Coste propio · sin documento"
     },
     {
       "id": "L05",
@@ -338,21 +403,21 @@
       "familia": "PATROCINIO",
       "descripcion": "Patrocinio principal (firmado)",
       "importe": 25000,
-      "doc": null
+      "doc": "D8"
     },
     {
       "id": "V3",
       "familia": "PATROCINIO",
       "descripcion": "Subvención municipal (concedida)",
       "importe": 15000,
-      "doc": null
+      "doc": "D9"
     },
     {
       "id": "V4",
       "familia": "BARRA",
       "descripcion": "Barras: canon fijo + variable",
       "importe": 22600,
-      "doc": null
+      "doc": "D10"
     }
   ],
   "avisos": [
@@ -362,11 +427,13 @@
       "linea": "L06",
       "doc": "D4",
       "estado_inicial": "confirmado",
+      "severidad": "alta",
       "eur": 2268,
       "pagado": "27,50 €/h",
       "desviacion_pct": 62,
       "n_precios": 3,
-      "titulo": "Vigilante de seguridad a 27,50 €/h: un 62 % por encima de la referencia"
+      "titulo": "Vigilante de seguridad a 27,50 €/h: un 62 % por encima de la referencia",
+      "referencia_aprox": "≈ 17 €/h"
     },
     {
       "id": "A02",
@@ -374,6 +441,7 @@
       "linea": "L08",
       "doc": "D2",
       "estado_inicial": "confirmado",
+      "severidad": "alta",
       "eur": 588,
       "titulo": "«Grupo electrógeno 100 kVA insonorizado» aparece en 2 documentos",
       "detalle": "El presupuesto P-2026-041 ya incluía 2 grupos × 3 días a 98 € y la factura F-2026-0288 vuelve a cobrar la misma partida. En los costes está contada dos veces: confirmar el aviso devuelve 588 € al resultado.",
@@ -385,11 +453,13 @@
       "linea": "L13",
       "doc": "D3",
       "estado_inicial": "justificado",
+      "severidad": "alta",
       "eur": 607.5,
       "pagado": "9,50 €/m²/evento",
       "desviacion_pct": 27,
       "n_precios": 16,
-      "titulo": "Carpa backstage y catering a 9,50 €/m²/evento: un 27 % por encima de la referencia"
+      "titulo": "Carpa backstage y catering a 9,50 €/m²/evento: un 27 % por encima de la referencia",
+      "referencia_aprox": "≈ 7,50 €/m²/evento"
     },
     {
       "id": "A04",
@@ -397,11 +467,13 @@
       "linea": "L12",
       "doc": "D4",
       "estado_inicial": "detectado",
+      "severidad": "alta",
       "eur": 960.03,
       "pagado": "260 €/día",
       "desviacion_pct": 26,
       "n_precios": 8,
-      "titulo": "Técnicos de sonido y luz a 260 €/día: un 26 % por encima de la referencia"
+      "titulo": "Técnicos de sonido y luz a 260 €/día: un 26 % por encima de la referencia",
+      "referencia_aprox": "≈ 207 €/día"
     },
     {
       "id": "A05",
@@ -409,6 +481,7 @@
       "linea": "L07",
       "doc": "D1",
       "estado_inicial": "detectado",
+      "severidad": "media",
       "eur": 66.24,
       "pagado": "98,00 €/ud/día",
       "desviacion_pct": 13,
@@ -421,6 +494,7 @@
       "linea": "L08",
       "doc": "D2",
       "estado_inicial": "detectado",
+      "severidad": "media",
       "eur": 66.24,
       "pagado": "98,00 €/ud/día",
       "desviacion_pct": 13,
@@ -433,6 +507,7 @@
       "linea": "L04",
       "doc": null,
       "estado_inicial": "no_aplica",
+      "severidad": "alta",
       "eur": 2807,
       "pagado": "4.200 € (coste propio)",
       "desviacion_pct": 202,
@@ -468,6 +543,6 @@
     ]
   },
   "config": {
-    "referencias": "a"
+    "referencias": "b"
   }
 }

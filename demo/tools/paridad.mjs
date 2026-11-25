@@ -48,12 +48,15 @@ for (const a of data.avisos) if (a.doc && !data.documentos.some((d) => d.ref ===
 // plan independiente (réplica directa de generar_plan/resumen_plan del servidor)
 function planIndep(estados, colchon) {
   let total = 0; const riesgo = { asumir: [0, 0], vigilar: [0, 0], mitigar: [0, 0] };
+  const fuera = data.avisos.filter((a) => a.codigo === 'D03' && estados[a.id] === 'confirmado').map((a) => a.linea_duplicada);
   for (const l of data.lineas_compra) {
+    if (fuera.includes(l.id)) continue;
     const av = data.avisos.filter((a) => a.linea === l.id);
     const m = av.find((a) => a.codigo === 'M01' && estados[a.id] === 'confirmado');
     const precio = m ? Math.round((l.precio_unit - m.eur / (l.cantidad * l.dias)) * 100 + 1e-9) : cts(l.precio_unit);
     const imp = Math.round(l.cantidad * l.dias * precio);
-    const r = av.some((a) => estados[a.id] === 'confirmado') ? 'mitigar' : av.some((a) => estados[a.id] === 'detectado') ? 'vigilar' : 'asumir';
+    const r = av.some((a) => estados[a.id] === 'confirmado' && a.severidad === 'alta') ? 'mitigar'
+      : av.some((a) => ['confirmado', 'detectado'].includes(estados[a.id])) ? 'vigilar' : 'asumir';
     riesgo[r][0]++; riesgo[r][1] += imp; total += imp;
   }
   return { costes: total, resultado: Math.round((ingresos - total * (1 + colchon / 100)) / 100) * 100, riesgo };
@@ -93,8 +96,12 @@ if (!ruta) {
   cmp('resultado corregido', k.corregido / 100, s.resultado_corregido);
   const pl = L.plan(data, est0, p.colchon_pct);
   cmp('ingresos previstos del plan', pl.ingresos / 100, p.ingresos_previstos);
-  cmp(`costes del plan (colchón ${p.colchon_pct} %)`, pl.costes / 100, p.costes_plan);
-  cmp('resultado previsto del plan', pl.resultado / 100, p.resultado_previsto);
+  // Divergencia conocida: el servidor no excluye la línea duplicada (pendiente de corregir en el servidor, fuera de esta
+  // tarea). La demo sí. Se comprueba que la diferencia es EXACTAMENTE esa línea, ni un euro más.
+  const dup = pl.fuera.reduce((s2, l) => s2 + cts(l.importe), 0);
+  console.log(`INFO  (b) divergencia conocida: el servidor no excluye la línea duplicada (${pl.fuera.map((l) => l.id).join(', ') || 'ninguna'}, ${e(dup)}); pendiente de corregir en el servidor, fuera de esta tarea`);
+  cmp(`costes del plan + línea duplicada excluida (colchón ${p.colchon_pct} %)`, (pl.costes + dup) / 100, p.costes_plan);
+  cmp('resultado previsto − efecto de la línea duplicada', Math.round((pl.resultado_exacto_cts - dup * (1 + p.colchon_pct / 100)) / 100), p.resultado_previsto);
   // Recuento por riesgo: informativo. El plan del servidor es una foto del momento en que se generó (con los 12 avisos y
   // estados de entonces); la demo lo recalcula con los estados actuales y solo con los avisos publicados.
   for (const r of ['asumir', 'vigilar', 'mitigar']) {

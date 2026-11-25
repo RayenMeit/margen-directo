@@ -7,7 +7,10 @@
 // - Corregido = resultado + Σ avisos CONFIRMADOS. Justificado, no aplica y detectado no suman nunca.
 // - Plan (réplica de generar_plan + resumen_plan): cada línea de compra pasa al plan;
 //   si tiene un aviso de precio (M01) confirmado, va al precio de referencia: round(precio − eur / (cantidad × días), 2);
-//   riesgo: aviso confirmado → «mitigar»; aviso detectado → «vigilar»; si no, «asumir».
+//   riesgo (como el servidor): aviso confirmado de severidad alta → «mitigar»; aviso confirmado de severidad media o
+//   aviso detectado → «vigilar»; si no, «asumir».
+//   Diferencia con el servidor (decidida el 25/11): si un aviso de partida duplicada (D03) está confirmado, la línea
+//   duplicada (la del presupuesto) NO entra en el plan. El servidor hoy la mete: presupuesta dos veces la misma partida.
 //   Resultado previsto = ingresos − costes del plan × (1 + colchón %).
 
 export const ESTADOS = ['detectado', 'confirmado', 'justificado', 'no_aplica'];
@@ -52,15 +55,16 @@ export function cierre(data, estados) {
 
 export function plan(data, estados, colchonPct) {
   const ingresos = data.lineas_ingreso.reduce((s, l) => s + c(l.importe), 0);
-  const lineas = data.lineas_compra.map((l) => {
+  const excluidas = new Set(data.avisos.filter((a) => a.linea_duplicada && estados[a.id] === 'confirmado').map((a) => a.linea_duplicada));
+  const lineas = data.lineas_compra.filter((l) => !excluidas.has(l.id)).map((l) => {
     const avisos = data.avisos.filter((a) => a.linea === l.id);
     const m01conf = avisos.find((a) => a.codigo === 'M01' && estados[a.id] === 'confirmado');
     const unidades = l.cantidad * l.dias;
     const precioCts = m01conf ? round2cts(l.precio_unit - m01conf.eur / unidades) : c(l.precio_unit);
     const importe = Math.round(unidades * precioCts);
     let riesgo = 'asumir';
-    if (avisos.some((a) => estados[a.id] === 'confirmado')) riesgo = 'mitigar';
-    else if (avisos.some((a) => estados[a.id] === 'detectado')) riesgo = 'vigilar';
+    if (avisos.some((a) => estados[a.id] === 'confirmado' && a.severidad === 'alta')) riesgo = 'mitigar';
+    else if (avisos.some((a) => estados[a.id] === 'confirmado' || estados[a.id] === 'detectado')) riesgo = 'vigilar';
     return { id: l.id, descripcion: l.descripcion, cantidad: l.cantidad, unidad: l.unidad, dias: l.dias,
              precio_antes: c(l.precio_unit), precio: precioCts, importe, riesgo };
   });
@@ -74,7 +78,8 @@ export function plan(data, estados, colchonPct) {
     porRiesgo[r] = { n: ls.length, importe: ls.reduce((s, l) => s + l.importe, 0) };
   }
   // resultado: en céntimos, redondeado al euro (como se muestra); resultado_exacto_cts: sin redondear
-  return { ingresos, costes, colchon_pct: colchonPct, colchon, resultado: Math.round(resultadoExacto / 100) * 100, resultado_exacto_cts: resultadoExacto, lineas, porRiesgo };
+  const fuera = data.lineas_compra.filter((l) => excluidas.has(l.id));
+  return { ingresos, costes, colchon_pct: colchonPct, colchon, resultado: Math.round(resultadoExacto / 100) * 100, resultado_exacto_cts: resultadoExacto, lineas, porRiesgo, fuera };
 }
 
 // Formato español: «21.579 €», «22.671,51 €», agrupando también los miles de 4 cifras (como el resto de la web).
