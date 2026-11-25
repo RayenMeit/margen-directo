@@ -2,6 +2,7 @@
 // todo el estado vive en memoria y «Volver al ejemplo original» lo reinicia.
 import data from './data.js';
 import * as L from './logica.js';
+import * as P from './presentacion.js';
 
 const VISTAS = {
   'entra': { titulo: 'Lo que entró', pintar: vistaEntra },
@@ -22,8 +23,8 @@ const estado = { avisos: L.estadosIniciales(data), colchon: data.plan.colchon_pc
 const lineaPorId = Object.fromEntries(data.lineas_compra.map((l) => [l.id, l]));
 const docPorRef = Object.fromEntries(data.documentos.map((d) => [d.ref, d]));
 const $ = (sel) => document.querySelector(sel);
-const euros = (cts) => L.fmt(cts);
-const precio = (x) => L.fmt(Math.round(x * 100), { decimales: !Number.isInteger(x) });
+const al = (cts) => Math.round(cts / 100) * 100;                 // al euro (solo lo que se ve)
+const euros = (cts) => L.fmt(al(cts));
 const fecha = (iso) => iso.split('-').reverse().join('/');
 const miles = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
@@ -68,6 +69,8 @@ function vistaEntra(main) {
   const p = data.proyecto;
   main.append(
     h('p', { class: 'meta' }, `${fecha(p.fecha)} · ${p.sede} · aforo ${miles(p.aforo)} personas`),
+    gancho(),
+    comoFunciona(),
     h('dl', { class: 'tarjetas' },
       h('div', { class: 'tarjeta' }, h('dt', {}, 'Ingresos'), h('dd', { class: 'num' }, euros(k.ingresos))),
       h('div', { class: 'tarjeta' }, h('dt', {}, 'Costes'), h('dd', { class: 'num' }, euros(k.costes))),
@@ -77,7 +80,7 @@ function vistaEntra(main) {
     lista(data.lineas_ingreso.map((l) => fila(l.descripcion, euros(L.c(l.importe)), docTexto(l.doc, l)))),
     h('h2', {}, `Costes (${data.lineas_compra.length} líneas)`),
     lista(data.lineas_compra.map((l) => fila(l.descripcion, euros(L.c(l.importe)),
-      [`${l.proveedor} · ${miles(l.cantidad)} ${l.unidad}${l.dias > 1 ? ` × ${l.dias} días` : ''} a ${precio(l.precio_unit)} · `, docTexto(l.doc, l)]))),
+      [`${l.proveedor} · ${P.cantidadTexto(l)} · `, docTexto(l.doc, l)]))),
     h('h2', {}, 'Documentos'),
     lista(data.documentos.map((d) => {
       const n = [...data.lineas_compra, ...data.lineas_ingreso].filter((l) => l.doc === d.ref).length;
@@ -88,6 +91,33 @@ function vistaEntra(main) {
     h('p', { class: 'nota' }, 'Estimaciones abiertas: no cambian el resultado hasta que se cierren.'),
     lista(data.incidencias.map((i) => fila(i.titulo, `≈ ${euros(L.c(i.importe_est))}`, `${i.detalle} Lo asume: ${i.asume === 'nosotros' ? 'la productora' : 'por decidir'}.`))),
   );
+}
+
+// Gancho: dos líneas con las cifras del ESTADO INICIAL (calculadas, no escritas a mano).
+const CORTO = { 'SEGURIDAD': 'un vigilante', 'ENERGIA': 'un grupo electrógeno', 'TECNICOS_AV': 'los técnicos de sonido y luz', 'CARPAS': 'una carpa' };
+function gancho() {
+  const e0 = L.estadosIniciales(data);
+  const k = L.cierre(data, e0);
+  const partes = data.avisos.filter((a) => e0[a.id] === 'confirmado').map((a) => {
+    const l = lineaPorId[a.linea];
+    const quien = CORTO[l.familia] || `«${l.descripcion.toLowerCase()}»`;
+    return a.codigo === 'D03' ? `${quien} cobrado dos veces` : `${quien} a ${a.pagado}`;
+  });
+  const y = partes.length > 1 ? `${partes.slice(0, -1).join(', ')} y ${partes[partes.length - 1]}` : partes.join('');
+  return h('div', { class: 'gancho' },
+    h('p', {}, `Un festival ficticio de ${miles(data.proyecto.aforo)} personas. Sobre el papel le quedaron ${euros(k.resultado)}.`),
+    h('p', {}, `Revisando sus documentos aparecieron ${euros(k.confirmado)} pagados de más: ${y}.`),
+    h('p', { class: 'gancho-enlace' }, h('a', { href: '#/no-cuadra' }, 'Ver lo que no cuadra →')));
+}
+
+function comoFunciona() {
+  return h('section', { class: 'como', 'aria-labelledby': 't-como' },
+    h('h2', { id: 't-como' }, 'Cómo funciona'),
+    h('ol', { class: 'pasos' },
+      h('li', {}, 'Me mandas presupuestos, facturas y liquidaciones.'),
+      h('li', {}, 'Los vuelco yo: tú no rellenas nada.'),
+      h('li', {}, 'Lo revisamos juntos en 20 minutos.')),
+    h('p', { class: 'nota' }, 'Con tus datos reales firmamos antes un NDA. Nada entra sin él.'));
 }
 
 function lista(items) { return h('ul', { class: 'lista' }, items); }
@@ -120,11 +150,11 @@ function tarjetaAviso(a) {
   if (a.codigo === 'D03') {
     const dup = lineaPorId[a.linea_duplicada];
     origen.push(['Documentos', `${docPorRef[dup.doc].numero} (${tipoDoc(docPorRef[dup.doc]).toLowerCase()}) y ${docPorRef[a.doc].numero} (${tipoDoc(docPorRef[a.doc]).toLowerCase()})`]);
-    origen.push(['Línea', `${l.descripcion} · ${l.cantidad} × ${l.dias} días a ${precio(l.precio_unit)} = ${euros(L.c(l.importe))}, en los dos`]);
+    origen.push(['Línea', `${l.descripcion} · ${P.cantidadTexto(l)} = ${euros(L.c(l.importe))}, en los dos`]);
     origen.push(['Contado de más', euros(L.c(a.eur))]);
   } else {
     origen.push(['Documento', docTexto(a.doc, l)]);
-    origen.push(['Línea', `${l.descripcion} · ${miles(l.cantidad)} ${l.unidad}${l.dias > 1 ? ` × ${l.dias} días` : ''} = ${euros(L.c(l.importe))}`]);
+    origen.push(['Línea', `${l.descripcion} · ${P.cantidadTexto(l)} = ${euros(L.c(l.importe))}`]);
     origen.push(['Pagado', a.pagado]);
     origen.push(['Por encima de la referencia', `+${a.desviacion_pct} % · ${euros(L.c(a.eur))}`]);
     if (a.referencia_aprox) origen.push(['Referencia', `${a.referencia_aprox} (${a.n_precios} precios del sector)`]);
@@ -194,7 +224,7 @@ function bloqueQuedo() {
     h('p', { class: 'nota' }, 'Resultado del evento, corregido solo con lo confirmado.'),
     h('dl', { class: 'cuenta-corregida' },
       h('div', {}, h('dt', {}, 'Resultado del evento (lo que pagaste)'), h('dd', { class: 'num' }, euros(k.resultado))),
-      h('div', {}, h('dt', {}, `+ Avisos confirmados (${k.n.confirmado})`), h('dd', { class: 'num' }, L.fmt(k.confirmado, { signo: true }))),
+      h('div', {}, h('dt', {}, `+ Avisos confirmados (${k.n.confirmado})`), h('dd', { class: 'num' }, L.fmt(al(k.confirmado), { signo: true }))),
       h('div', { class: 'total' }, h('dt', {}, '= Lo que te quedó'), h('dd', { class: 'num' }, euros(k.corregido)))),
     h('p', { class: 'nota' }, noSuman.length ? `No suman: ${noSuman.join(', ')}.` : 'Todo lo revisado ya está decidido.'),
     k.detectado > 0 ? h('p', { class: 'nota' }, 'Si confirmaras también lo que está por revisar: hasta ', h('b', { class: 'num' }, euros(k.corregido + k.detectado)), '.') : null,
@@ -211,7 +241,8 @@ function cuentaAntes(pl) {
 function pintarPlan() {
   const pl = L.plan(data, estado.avisos, estado.colchon);
   $('#plan-antes').replaceChildren(...cuentaAntes(pl));
-  $('#plan-colchon').textContent = `${pl.colchon_pct} % · ${L.fmt(-pl.colchon)}`;
+  // al euro y cuadrando a la vista: colchón mostrado = previsto antes (al euro) − después (al euro)
+  $('#plan-colchon').textContent = `${pl.colchon_pct} % · ${L.fmt(-(al(pl.ingresos - pl.costes) - pl.resultado))}`;
   $('#plan-despues').replaceChildren(h('div', { class: 'total' }, h('dt', {}, '= Después del colchón'), h('dd', { class: 'num' }, euros(pl.resultado))));
   $('#plan-riesgos').replaceChildren(...riesgos(pl));
   $('#plan-fuera').replaceChildren(...fueraPlan(pl));

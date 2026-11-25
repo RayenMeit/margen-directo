@@ -19,6 +19,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { precioUnidadTexto, normalizaUnidad } from '../presentacion.js';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const DEMO = path.resolve(AQUI, '..');
@@ -106,8 +107,9 @@ const avisos = o.avisos.filter((a) => AVISOS_PUBLICOS.includes(a.id)).map((a) =>
       linea_duplicada: pres.id };
   }
   if (a.codigo !== 'M01') fail(`aviso ${a.id} con código desconocido ${a.codigo}`);
-  const out = { ...base, pagado: a.pagado, desviacion_pct: a.desviacion_pct, n_precios: a.n_precios,
-    titulo: `${l.descripcion} a ${a.pagado}: un ${a.desviacion_pct} % por encima de la referencia` };
+  const pagado = precioUnidadTexto(l);
+  const out = { ...base, pagado, desviacion_pct: a.desviacion_pct, n_precios: a.n_precios,
+    titulo: `${l.descripcion} a ${pagado}: un ${a.desviacion_pct} % por encima de la referencia` };
   if (a.justificacion) out.justificacion = a.justificacion;
   if (REFERENCIAS === 'b' && REFERENCIAS_B.includes(a.id)) {
     const m = String(a.referencia).match(/^([\d.]+(?:,\d+)?)\s*(.*)$/);
@@ -115,7 +117,7 @@ const avisos = o.avisos.filter((a) => AVISOS_PUBLICOS.includes(a.id)).map((a) =>
     const valor = Number(m[1].replace(/\./g, '').replace(',', '.'));
     const redondeo = valor < 20 ? Math.round(valor * 2) / 2 : Math.round(valor);
     const txt = Number.isInteger(redondeo) ? String(redondeo) : redondeo.toFixed(2).replace('.', ',');
-    out.referencia_aprox = `≈ ${txt} ${m[2]}`.trim();
+    out.referencia_aprox = normalizaUnidad(`≈ ${txt} ${m[2]}`.trim());
   } else if (REFERENCIAS !== 'a' && REFERENCIAS !== 'b') fail('opción de referencias no implementada');
   return out;
 });

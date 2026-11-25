@@ -41,7 +41,9 @@ const data = JSON.parse(leer(path.join(DEMO, 'data.json')));
 // 1. archivos internos
 const internos = todos.filter((p) => /origen|brief/i.test(path.basename(p)));
 internos.length ? internos.forEach((p) => mal(`archivo interno en la carpeta pública: ${rel(p)}`)) : ok('ningún archivo interno (origen, brief) en demo/');
-for (const p of texto) if (/BRIEF-DEMO|Brief para Code|revision_cowork|aviso_para_code/.test(leer(p)) && !p.endsWith('comprobar-publico.mjs')) mal(`${rel(p)} contiene texto del brief o del archivo de origen`);
+// (marcas montadas por partes para que este archivo no las contenga literalmente)
+const MARCAS = new RegExp(['BRIEF-' + 'DEMO', 'Brief para ' + 'Code', 'revision' + '_cowork', 'aviso_para' + '_code'].join('|'));
+for (const p of texto) if (MARCAS.test(leer(p))) mal(`${rel(p)} contiene texto del brief o del archivo de origen`);
 
 // 2. valores del archivo de origen
 const ruta = process.argv[2];
@@ -57,7 +59,7 @@ else {
     else if (x && typeof x === 'object') Object.values(x).forEach((v) => valores(v, out));
     return out;
   };
-  const tokens = (s) => s.split(/[\s()«»"“”:;,·]+/).filter((t) => t.length >= 12);
+  const tokens = (s) => s.split(/[\s()«»"“”'‘’:;,·]+/).filter((t) => t.length >= 12);
   const vo = valores(origen); const vd = valores(data);
   const publicoS = new Set([...vd.s, ...[...vd.s].flatMap(tokens)]);
   // números que la página calcula (cierre y plan en todos los escenarios y colchones): no son fugas

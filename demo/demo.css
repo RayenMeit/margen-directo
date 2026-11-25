@@ -66,6 +66,16 @@ a { color: var(--d-acento); }
 .tarjeta dd.sub { font-size: 1rem; color: var(--d-texto-2); font-family: var(--d-f-texto); font-weight: 400; }
 .tarjeta.destacada { border: 2px solid var(--d-acento); }
 
+/* Vista 1: gancho y «Cómo funciona» */
+.gancho { margin: 1rem 0 1.25rem; padding: .9rem 1rem; background: var(--d-superficie); border-top: 4px solid var(--d-acento); }
+.gancho p { margin: .3rem 0; font-size: 1.1rem; }
+.gancho-enlace a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; text-underline-offset: .25em; }
+.como h2 { margin-top: 1.25rem; }
+.pasos { list-style: none; counter-reset: paso; margin: .5rem 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: .75rem; }
+.pasos li { counter-increment: paso; display: flex; gap: .75rem; align-items: baseline; padding: .75rem 0; border-top: 1px solid var(--d-regla); }
+.pasos li::before { content: counter(paso); flex: none; display: inline-grid; place-items: center; min-width: 2rem; height: 2rem;
+  background: var(--d-acento); color: var(--d-acento-texto); font: 700 1rem/1 var(--d-f-cifra);
+  clip-path: polygon(.3rem 0, 100% 0, calc(100% - .3rem) 100%, 0 100%); }
 .lista { list-style: none; margin: 0; padding: 0; }
 .fila { padding: .7rem 0; border-bottom: 1px solid var(--d-borde); }
 .fila-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
@@ -168,6 +178,7 @@ a { color: var(--d-acento); }
   .resumen-estados { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 @media (min-width: 40rem) {
+  .pasos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .leyenda { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cierre { padding: 2.5rem 1.5rem; display: grid; grid-template-columns: 1fr auto; align-items: end; column-gap: 2.5rem; }
   .cierre h2, .cierre p { grid-column: 1; }

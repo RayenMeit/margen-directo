@@ -455,11 +455,11 @@
       "estado_inicial": "justificado",
       "severidad": "alta",
       "eur": 607.5,
-      "pagado": "9,50 €/m²/evento",
+      "pagado": "9,50 €/m²",
       "desviacion_pct": 27,
       "n_precios": 16,
-      "titulo": "Carpa backstage y catering a 9,50 €/m²/evento: un 27 % por encima de la referencia",
-      "referencia_aprox": "≈ 7,50 €/m²/evento"
+      "titulo": "Carpa backstage y catering a 9,50 €/m²: un 27 % por encima de la referencia",
+      "referencia_aprox": "≈ 7,50 €/m²"
     },
     {
       "id": "A04",
@@ -469,11 +469,11 @@
       "estado_inicial": "detectado",
       "severidad": "alta",
       "eur": 960.03,
-      "pagado": "260 €/día",
+      "pagado": "260 €/jornada",
       "desviacion_pct": 26,
       "n_precios": 8,
-      "titulo": "Técnicos de sonido y luz a 260 €/día: un 26 % por encima de la referencia",
-      "referencia_aprox": "≈ 207 €/día"
+      "titulo": "Técnicos de sonido y luz a 260 €/jornada: un 26 % por encima de la referencia",
+      "referencia_aprox": "≈ 207 €/jornada"
     },
     {
       "id": "A05",
@@ -483,10 +483,10 @@
       "estado_inicial": "detectado",
       "severidad": "media",
       "eur": 66.24,
-      "pagado": "98,00 €/ud/día",
+      "pagado": "98 € por grupo y día",
       "desviacion_pct": 13,
       "n_precios": 5,
-      "titulo": "Grupo electrógeno 100 kVA insonorizado a 98,00 €/ud/día: un 13 % por encima de la referencia"
+      "titulo": "Grupo electrógeno 100 kVA insonorizado a 98 € por grupo y día: un 13 % por encima de la referencia"
     },
     {
       "id": "A06",
@@ -496,10 +496,10 @@
       "estado_inicial": "detectado",
       "severidad": "media",
       "eur": 66.24,
-      "pagado": "98,00 €/ud/día",
+      "pagado": "98 € por grupo y día",
       "desviacion_pct": 13,
       "n_precios": 5,
-      "titulo": "Grupo electrógeno 100 kVA insonorizado a 98,00 €/ud/día: un 13 % por encima de la referencia"
+      "titulo": "Grupo electrógeno 100 kVA insonorizado a 98 € por grupo y día: un 13 % por encima de la referencia"
     },
     {
       "id": "A07",
@@ -509,10 +509,10 @@
       "estado_inicial": "no_aplica",
       "severidad": "alta",
       "eur": 2807,
-      "pagado": "4.200 € (coste propio)",
+      "pagado": "4.200 €",
       "desviacion_pct": 202,
       "n_precios": 6,
-      "titulo": "Dirección de producción (propia) a 4.200 € (coste propio): un 202 % por encima de la referencia",
+      "titulo": "Dirección de producción (propia) a 4.200 €: un 202 % por encima de la referencia",
       "justificacion": "Coste interno de la productora, no comparable con auxiliares."
     }
   ],
