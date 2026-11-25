@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="Ejemplo con datos ficticios de Margen Directo: lo que te quedó del último evento y lo que te va a quedar del siguiente.">
+<title>Lo que entró · Festival Ría Norte 2026 (ejemplo) · Margen Directo</title>
+<link rel="icon" href="data:,">
+<link rel="preload" href="fonts/poppins-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/poppins-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/aleo-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/jetbrains-mono-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="demo.css">
+<script type="module" src="demo.js"></script>
+</head>
+<body>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<header class="cabecera">
+  <div class="cabecera-in">
+    <p class="ficticio">Ejemplo con datos ficticios</p>
+    <p class="marca">Margen Directo · <span class="proyecto">Festival Ría Norte 2026</span></p>
+    <p class="lema">Lo que te quedó del último evento. Lo que te va a quedar del siguiente.</p>
+    <nav class="vistas" aria-label="Vistas del ejemplo">
+      <a href="#/entra" data-vista="entra">Lo que entró</a>
+      <a href="#/no-cuadra" data-vista="no-cuadra">Lo que no cuadra</a>
+      <a href="#/queda" data-vista="queda">Lo que queda</a>
+    </nav>
+  </div>
+</header>
+<section class="franja" aria-label="Cifras del ejemplo">
+  <dl class="franja-in">
+    <div class="cifra"><dt>Quedó</dt><dd id="f-quedo">—</dd></div>
+    <div class="cifra"><dt>Corregido</dt><dd id="f-corregido">—</dd></div>
+    <div class="cifra"><dt>Por revisar <span class="nocuenta">(no cuenta)</span></dt><dd id="f-revisar">—</dd></div>
+  </dl>
+  <p class="regla franja-pie">Solo lo confirmado cuenta.</p>
+</section>
+<div class="reinicio"><button type="button" class="btn btn-sec" id="reiniciar">Volver al ejemplo original</button></div>
+<main id="contenido" class="contenido">
+  <noscript><p class="nota">Esta demo necesita JavaScript para mostrar el ejemplo.</p></noscript>
+</main>
+<aside class="cierre" id="cierre" aria-labelledby="t-cierre" hidden>
+  <h2 id="t-cierre">¿Lo vemos con un evento tuyo? <em>20 minutos.</em></h2>
+  <p>Me mandas un evento ya hecho y lo cerramos juntos, con un NDA firmado antes.</p>
+  <a class="btn-cierre" href="https://brainstreaming.tech/cierre/">Reservar 20 minutos</a>
+</aside>
+<p class="vivo" id="anuncio" role="status" aria-live="polite"></p>
+<footer class="pie">
+  <p class="ficticio">Ejemplo con datos ficticios</p>
+  <p>No es contabilidad ni sustituye a la gestoría; solo lo confirmado cuenta.</p>
+</footer>
+</body>
+</html>
