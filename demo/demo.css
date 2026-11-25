@@ -63,9 +63,38 @@ a { color: var(--d-acento); }
 .tarjeta { background: var(--d-superficie); border: 1px solid var(--d-borde); border-radius: var(--d-radio); padding: .75rem 1rem; }
 .tarjeta dt { color: var(--d-texto-2); }
 .tarjeta dd { margin: .2rem 0 0; font-size: 1.35rem; }
+.reinicio[hidden] { display: none; }
 .tarjeta dd.sub { font-size: 1rem; color: var(--d-texto-2); font-family: var(--d-f-texto); font-weight: 400; }
 .tarjeta.destacada { border: 2px solid var(--d-acento); }
 
+/* Ronda 4: menos texto. Plegables nativos (<details>), grupos de coste con barra, tarjetas de aviso compactas. */
+.plegable { margin: .5rem 0; border-top: 1px solid var(--d-regla); }
+.plegable > summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font-weight: 600; color: var(--d-acento); list-style: none; }
+.plegable > summary::-webkit-details-marker { display: none; }
+.plegable > summary::before { content: "▸"; display: inline-block; width: 1.2rem; }
+.plegable[open] > summary::before { content: "▾"; }
+.plegable > summary:focus-visible { outline: 3px solid var(--d-foco); outline-offset: 2px; }
+.tarjetas.tres { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
+.tarjetas.tres .tarjeta { padding: .5rem .6rem; }
+.tarjetas.tres dd { font-size: clamp(1rem, 4vw, 1.35rem); }
+.compacta .fila-c { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .45rem 0; border-bottom: 1px solid var(--d-regla); }
+.doc-peq { color: var(--d-apagado); font-weight: 400; }
+.grupos { list-style: none; margin: 0; padding: 0; }
+.grupo { display: grid; grid-template-columns: 1fr auto; gap: .2rem 1rem; padding: .45rem 0; }
+.grupo-t { font-weight: 600; }
+.aviso-tag { display: inline-block; padding: 0 .5rem; background: var(--d-acento); color: var(--d-acento-texto); font-weight: 600; clip-path: polygon(.3rem 0, 100% 0, calc(100% - .3rem) 100%, 0 100%); }
+.barra-pista { grid-column: 1 / -1; display: block; height: .6rem; }
+.barra-g { display: block; height: 100%; background: var(--d-texto-2); }
+.leyenda-linea { list-style: none; margin: .5rem 0 1rem; padding: 0; display: flex; flex-wrap: wrap; gap: .25rem 1rem; color: var(--d-texto-2); }
+.leyenda-linea li { display: inline-flex; align-items: center; gap: .4rem; }
+.aviso-c { padding: .75rem .9rem .25rem; }
+.aviso-fila { display: flex; justify-content: space-between; align-items: flex-start; gap: .75rem; }
+.aviso-c .aviso-t { margin: 0; font: 600 1rem/1.4 var(--d-f-texto); }
+.aviso-c .aviso-t .estado { margin-right: .25rem; }
+.aviso-o { margin: .2rem 0 0; color: var(--d-texto-2); }
+.aviso-eur { margin: 0; font-size: 1.35rem; white-space: nowrap; }
+.aviso-c .acciones { margin-top: .5rem; }
+.aviso-c .plegable { margin: .5rem 0 0; }
 /* Vista 1: gancho y «Cómo funciona» */
 .gancho { margin: 1rem 0 1.25rem; padding: .9rem 1rem; background: var(--d-superficie); border-top: 4px solid var(--d-acento); }
 .gancho p { margin: .3rem 0; font-size: 1.1rem; }
