@@ -3,7 +3,7 @@ html,body{margin:0;background:var(--d-fondo)}
 body{width:600px;font:400 15px/1.45 var(--d-f-texto);color:var(--d-texto)}
 p{margin:0}
 .cifra{font-family:var(--d-f-cifra);font-variant-numeric:tabular-nums;font-weight:500;letter-spacing:-.01em}
-.e{display:inline-block;font:400 10.5px/1 'Aleo',Georgia,serif;letter-spacing:.09em;text-transform:uppercase;padding:.55em 1.15em .45em;
+.e{display:inline-block;font:600 10px/1 var(--d-f-texto);letter-spacing:.08em;text-transform:uppercase;padding:.55em 1.15em .45em;
   clip-path:polygon(var(--d-corte) 0,100% 0,calc(100% - var(--d-corte)) 100%,0 100%);white-space:nowrap;vertical-align:middle}
 .e-verde{background:var(--d-acento);color:var(--d-acento-texto)}
 .e-papel{background:var(--d-texto);color:var(--d-morado)}

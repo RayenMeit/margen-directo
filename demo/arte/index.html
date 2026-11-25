@@ -8,7 +8,7 @@
 <title>Margen Directo · demo (maqueta de dirección de arte)</title>
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="maqueta.css">
-<script src="maqueta.js" defer></script>
+<script type="module" src="maqueta.js"></script>
 </head>
 <body>
 <a class="saltar" href="#contenido">Saltar al contenido</a>
@@ -51,8 +51,12 @@
 
   <div class="docs" id="docs"></div>
 
-  <h2 class="h2">Lo que todavía no tiene documento</h2>
-  <p class="intro">El <b class="cifra" data-f="pct-sindoc"></b> de los costes de este evento no tiene ningún documento detrás. Se muestra así, sin inventarle uno.</p>
+  <h2 class="h2">El resto de partidas, con su documento</h2>
+  <p class="intro">Cachés, sonido y luz, patrocinio, subvención y barras: cada uno con el documento de ejemplo del que sale.</p>
+  <div class="sindoc-lista" id="ejemplos"></div>
+
+  <h2 class="h2">Lo que no tiene documento</h2>
+  <p class="intro">Solo un coste propio de la productora. Se muestra así, sin inventarle un documento.</p>
   <div class="sindoc-lista" id="sindoc"></div>
 
   <p class="siguiente"><a href="#/no-cuadra">Siguiente: lo que no cuadra</a></p>
@@ -105,7 +109,7 @@
         <div class="total"><dt>= Previsto, antes del colchón</dt><dd class="cifra cifra-l" data-f="p-antes"></dd></div>
       </dl>
       <div class="colchon-bloque">
-        <p><span class="e e-papel">Colchón de imprevistos</span> <b class="cifra" data-f="p-colchon"></b></p>
+        <p><span class="e e-papel">Colchón de imprevistos · <span data-f="p-pct"></span></span> <b class="cifra" data-f="p-colchon"></b></p>
         <fieldset class="opciones">
           <legend>Reserva para imprevistos</legend>
           <label class="opcion"><input type="radio" name="colchon" value="0"> 0 %</label>
@@ -119,6 +123,7 @@
         <div class="total"><dt>= Después del colchón</dt><dd class="cifra cifra-l" data-f="p-despues"></dd></div>
       </dl>
 
+      <p class="nota" id="fuera" hidden></p>
       <h3 class="h3">Partidas del plan, por riesgo</h3>
       <ul class="riesgos" id="riesgos"></ul>
     </article>

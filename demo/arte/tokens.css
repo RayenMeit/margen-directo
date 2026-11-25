@@ -13,7 +13,6 @@
 
 /* ── Fuentes (OFL, autoalojadas; licencias en fonts/) ─────────────────────── */
 @font-face { font-family: 'Aleo'; font-style: normal; font-weight: 300; font-display: swap; src: url(fonts/aleo-latin-300-normal.woff2) format('woff2'); }
-@font-face { font-family: 'Aleo'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/aleo-latin-400-normal.woff2) format('woff2'); }
 @font-face { font-family: 'Aleo'; font-style: normal; font-weight: 700; font-display: swap; src: url(fonts/aleo-latin-700-normal.woff2) format('woff2'); }
 @font-face { font-family: 'Poppins'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/poppins-400.woff2) format('woff2'); }
 @font-face { font-family: 'Poppins'; font-style: normal; font-weight: 600; font-display: swap; src: url(fonts/poppins-600.woff2) format('woff2'); }
@@ -91,19 +90,20 @@
   --d-t-h2:       clamp(1.35rem, 2.8vw, 1.8rem);
   --d-t-texto:    1rem;
   --d-t-nota:     .875rem;
-  --d-t-etiqueta: .75rem;                        /* Aleo 400, versalitas, .09em */
+  --d-t-etiqueta: .72rem;                        /* Poppins 600, versalitas, .08em (Aleo solo en titulares; decisión del 25/11) */
+  --d-f-etiqueta: 600 var(--d-t-etiqueta)/1 'Poppins', system-ui, sans-serif;
   --d-esp-1: .25rem; --d-esp-2: .5rem; --d-esp-3: .75rem; --d-esp-4: 1rem; --d-esp-5: 1.5rem; --d-esp-6: 2.5rem; --d-esp-7: 4rem;
   --d-ancho: 72rem;          /* contenido máximo a 1280 px */
   --d-franja-alto: 4.5rem;   /* franja fija «Quedó · Corregido · Por revisar» (móvil: 3.75rem) */
 }
 
-/* ── 4. Formas de la marca (copia de marca/tokens.css) ───────────────────── */
+/* ── 4. Formas de la marca (copia de marca/tokens.css; la etiqueta pasa a Poppins 600) ── */
 .bs-etiqueta,.bs-boton{
   clip-path:polygon(var(--bs-cut) 0,100% 0,calc(100% - var(--bs-cut)) 100%,0 100%);
   border-radius:0;box-shadow:none;
 }
 .bs-etiqueta{display:inline-block;background:var(--bs-purple);color:#fff;
-  font:400 .78rem/1 var(--f-head);letter-spacing:.09em;text-transform:uppercase;padding:.5em 1.2em .42em}
+  font:600 .72rem/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;padding:.55em 1.2em .48em}  /* demo: Poppins 600 (en marca/tokens.css, Aleo 400) */
 .bs-etiqueta.verde{background:var(--bs-mint);color:var(--bs-ink)}
 .bs-boton{display:inline-flex;align-items:center;gap:.5em;background:var(--bs-purple);color:#fff;
   font:600 1rem/1 var(--f-body);padding:1em 1.9em;text-decoration:none}

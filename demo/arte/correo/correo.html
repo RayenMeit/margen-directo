@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=600">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
 <title>Captura para correo · vista 3</title>
 <link rel="stylesheet" href="../tokens.css">
 <link rel="stylesheet" href="correo.css">
+<script type="module" src="correo.js"></script>
 </head>
 <body>
 <!-- Fuente de la imagen captura-correo-1200.png (600 px de diseño × 2). Todo el texto es HTML; la imagen se exporta con Playwright. -->
@@ -19,16 +20,16 @@
   <div class="dos">
     <div class="col">
       <p class="lab"><span class="e e-verde">2026</span> Lo que te quedó</p>
-      <p class="cifra grande verde">21.579 €</p>
-      <p class="sub">corregido solo con lo confirmado<br><span class="cifra">18.723 € + 2.856 €</span></p>
+      <p class="cifra grande verde" data-f="queda"></p>
+      <p class="sub">corregido solo con lo confirmado<br><span class="cifra"><span data-f="base"></span> + <span data-f="conf"></span></span></p>
     </div>
     <div class="col">
       <p class="lab"><span class="e e-verde">2027</span> Lo que te va a quedar</p>
-      <p class="cifra grande">20.991 €</p>
+      <p class="cifra grande" data-f="antes"></p>
       <p class="sub">con los precios corregidos, antes del colchón</p>
     </div>
   </div>
-  <p class="colchon"><span class="e e-papel">Colchón 8 %</span> <span class="cifra">−8.229 €</span> <span class="flecha">apartado para imprevistos</span> <span class="cifra fin">= 12.762 €</span></p>
+  <p class="colchon"><span class="e e-papel">Colchón <span data-f="pct"></span></span> <span class="cifra" data-f="colchon"></span> <span class="flecha">apartado para imprevistos</span> <span class="cifra fin" data-f="despues"></span></p>
 </div>
 </body>
 </html>
