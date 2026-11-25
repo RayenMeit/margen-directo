@@ -4,32 +4,28 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=600">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
-<title>Captura para correo · vista 3</title>
+<title>Captura para correo</title>
 <link rel="stylesheet" href="../tokens.css">
 <link rel="stylesheet" href="correo.css">
 <script type="module" src="correo.js"></script>
 </head>
 <body>
-<!-- Fuente de la imagen captura-correo-1200.png (600 px de diseño × 2). Todo el texto es HTML; la imagen se exporta con Playwright. -->
+<!-- Fuente de la imagen captura-correo-1200.png (600 px de diseño × 2). Cifras: correo.js con ref/ (demo-publica 609f1c3). -->
 <div class="pieza">
   <div class="cab">
     <img src="../logotipo/bs-logo-horizontal-fondo-oscuro.svg" alt="" width="140" height="25">
     <span class="e e-verde">Ejemplo con datos ficticios</span>
   </div>
-  <p class="proy">Margen Directo · Festival Ría Norte 2026</p>
-  <div class="dos">
-    <div class="col">
-      <p class="lab"><span class="e e-verde">2026</span> Lo que te quedó</p>
-      <p class="cifra grande verde" data-f="queda"></p>
-      <p class="sub">corregido solo con lo confirmado<br><span class="cifra"><span data-f="base"></span> + <span data-f="conf"></span></span></p>
-    </div>
-    <div class="col">
-      <p class="lab"><span class="e e-verde">2027</span> Lo que te va a quedar</p>
-      <p class="cifra grande" data-f="antes"></p>
-      <p class="sub">con los precios corregidos, antes del colchón</p>
-    </div>
+  <p class="proy">Margen Directo · <span data-f="proyecto"></span></p>
+  <div class="heroe">
+    <p class="cifra grande verde" data-f="conf"></p>
+    <p class="lema">pagados de más en un festival de <span data-f="aforo"></span> personas</p>
   </div>
-  <p class="colchon"><span class="e e-papel">Colchón <span data-f="pct"></span></span> <span class="cifra" data-f="colchon"></span> <span class="flecha">apartado para imprevistos</span> <span class="cifra fin" data-f="despues"></span></p>
+  <p class="cifra trayecto">Sobre el papel: <span data-f="base"></span> → revisando sus facturas: <b data-f="queda"></b></p>
+  <ul class="pruebas">
+    <li data-f="prueba1"></li>
+    <li data-f="prueba2"></li>
+  </ul>
 </div>
 </body>
 </html>

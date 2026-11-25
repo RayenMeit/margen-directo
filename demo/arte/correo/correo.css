@@ -1,23 +1,25 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--d-fondo)}
 body{width:600px;font:400 15px/1.45 var(--d-f-texto);color:var(--d-texto)}
-p{margin:0}
+p,ul{margin:0;padding:0;list-style:none}
 .cifra{font-family:var(--d-f-cifra);font-variant-numeric:tabular-nums;font-weight:500;letter-spacing:-.01em}
 .e{display:inline-block;font:600 10px/1 var(--d-f-texto);letter-spacing:.08em;text-transform:uppercase;padding:.55em 1.15em .45em;
   clip-path:polygon(var(--d-corte) 0,100% 0,calc(100% - var(--d-corte)) 100%,0 100%);white-space:nowrap;vertical-align:middle}
 .e-verde{background:var(--d-acento);color:var(--d-acento-texto)}
-.e-papel{background:var(--d-texto);color:var(--d-morado)}
-.pieza{padding:26px 30px 28px}
+.pieza{padding:22px 30px 22px;height:340px;overflow:hidden}
 .cab{display:flex;justify-content:space-between;align-items:center}
 .cab img{height:22px;width:auto;display:block}
-.proy{margin-top:14px;color:var(--d-texto-2);font-size:13px}
-.dos{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:20px;padding-top:18px;border-top:1px solid var(--d-regla)}
-.lab{font:300 19px/1.2 var(--d-f-titular);display:flex;align-items:center;gap:8px}
-.grande{font-size:46px;line-height:1;margin:14px 0 8px}
+.proy{margin-top:10px;color:var(--d-texto-2);font-size:13px}
+/* 1 · Protagonista: lo pagado de más */
+.heroe{margin-top:12px;padding-top:14px;border-top:1px solid var(--d-regla)}
+.grande{font-size:70px;line-height:1;font-weight:600}
 .verde{color:var(--d-acento)}
-.sub{color:var(--d-apagado);font-size:12.5px;line-height:1.4}
-.sub .cifra{color:var(--d-texto-2);font-size:12px}
-.colchon{margin-top:20px;background:var(--d-morado);padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--d-texto)}
-.colchon .cifra{font-size:15px}
-.colchon .flecha{flex:1}
-.colchon .fin{font-weight:700}
+.lema{font:300 21px/1.2 var(--d-f-titular);margin-top:6px}
+/* 2 · El trayecto, en cifras */
+.trayecto{margin-top:14px;font-size:14px;color:var(--d-texto-2)}
+.trayecto b{color:var(--d-acento);font-weight:600}
+/* 3 · Dos pruebas, en bloque morado */
+.pruebas{margin-top:14px;background:var(--d-morado);padding:9px 14px;display:grid;gap:6px}
+.pruebas li{font-size:13.5px;color:var(--d-texto);display:flex;gap:10px;align-items:baseline}
+.pruebas li::before{content:"";flex:none;width:12px;height:8px;background:var(--d-acento);
+  clip-path:polygon(3px 0,100% 0,calc(100% - 3px) 100%,0 100%);transform:translateY(-1px)}

@@ -1,7 +1,8 @@
 Texto alternativo de captura-correo-1200.png (pegar completo en el atributo alt):
 
-Ejemplo con datos ficticios de Margen Directo, Festival Ría Norte 2026. Lo que te quedó en 2026: 21.579 €, corregido solo con lo confirmado (18.723 € más 2.856 €). Lo que te va a quedar en 2027: el mismo resultado, 21.579 €, con los precios corregidos y antes del colchón; con un colchón del 8 % para imprevistos (8.182 €) quedan 13.397 €.
+Ejemplo con datos ficticios. Margen Directo · Festival Ría Norte 2026. 2.856 € pagados de más en un festival de 3.500 personas. Sobre el papel: 18.723 € → revisando sus facturas: 21.579 €. Vigilante a 27,50 €/h (referencia ≈ 17 €). Grupo electrógeno cobrado dos veces: 588 €.
 
 Uso: <img src="…/captura-correo-1200.png" width="600" height="340" alt="(el texto de arriba)">  · 1200 × 680 px reales, mostrar a 600 × 340.
-Cifras: las calcula correo.js con ref/logica.js y ref/data.js (copia de demo-publica 609f1c3), en el estado inicial del ejemplo.
+Cifras: las calcula correo.js con ref/logica.js y ref/data.js (copia de demo-publica 609f1c3), en el estado inicial del ejemplo;
+correo.js para si las dos pruebas (A01 y A02) no suman lo confirmado.
 El correo debe funcionar sin la imagen: el texto vivo de debajo lo escribe Cowork.
