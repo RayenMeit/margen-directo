@@ -41,7 +41,7 @@ export function precioUnidadTexto(l) {
   }
 }
 
-// Unidades de un texto de referencia ya redondeado («≈ 207 €/día» → «≈ 207 €/jornada»).
+// Unidades de un texto de referencia ya redondeado («≈ 7,50 €/m²/evento» → «≈ 7,50 €/m²»).
 export function normalizaUnidad(txt) {
   return txt.replace('€/m²/evento', '€/m²').replace('€/ud/día', '€ por ud y día').replace('€/día', '€/jornada');
 }

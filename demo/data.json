@@ -462,20 +462,6 @@
       "referencia_aprox": "≈ 7,50 €/m²"
     },
     {
-      "id": "A04",
-      "codigo": "M01",
-      "linea": "L12",
-      "doc": "D4",
-      "estado_inicial": "detectado",
-      "severidad": "alta",
-      "eur": 960.03,
-      "pagado": "260 €/jornada",
-      "desviacion_pct": 26,
-      "n_precios": 8,
-      "titulo": "Técnicos de sonido y luz a 260 €/jornada: un 26 % por encima de la referencia",
-      "referencia_aprox": "≈ 207 €/jornada"
-    },
-    {
       "id": "A05",
       "codigo": "M01",
       "linea": "L07",

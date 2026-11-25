@@ -25,9 +25,11 @@ const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const DEMO = path.resolve(AQUI, '..');
 
 // ── Decisiones de Diego (25/11) ──
-const AVISOS_PUBLICOS = ['A01', 'A02', 'A03', 'A04', 'A05', 'A06', 'A07']; // defecto 6: A08–A12 fuera
+// defecto 6: A08–A12 fuera. A04 (técnicos de sonido y luz) también fuera (Diego, 25/11): la jornada real ronda 250–300 €;
+// la referencia de la base no es comparable (en el servidor está en «no aplica» con ese motivo).
+const AVISOS_PUBLICOS = ['A01', 'A02', 'A03', 'A05', 'A06', 'A07'];
 const REFERENCIAS = 'b';                                                      // §8.1: b limitada a REFERENCIAS_B
-const REFERENCIAS_B = ['A01', 'A03', 'A04'];
+const REFERENCIAS_B = ['A01', 'A03'];
 // Severidad en el servidor (leída en Supabase por Cowork el 25/11; el archivo de origen no la trae)
 const SEVERIDAD = { A01: 'alta', A02: 'alta', A03: 'alta', A04: 'alta', A05: 'media', A06: 'media', A07: 'alta' };
 // Documentos de ejemplo para las líneas que no tenían (defecto 2). IVA 21 %, salvo la subvención (sin IVA).

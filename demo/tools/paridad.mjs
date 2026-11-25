@@ -99,7 +99,7 @@ if (!ruta) {
   // Divergencia conocida: el servidor no excluye la línea duplicada (pendiente de corregir en el servidor, fuera de esta
   // tarea). La demo sí. Se comprueba que la diferencia es EXACTAMENTE esa línea, ni un euro más.
   const dup = pl.fuera.reduce((s2, l) => s2 + cts(l.importe), 0);
-  console.log(`INFO  (b) divergencia conocida: el servidor no excluye la línea duplicada (${pl.fuera.map((l) => l.id).join(', ') || 'ninguna'}, ${e(dup)}); pendiente de corregir en el servidor, fuera de esta tarea`);
+  console.log(`INFO  (b) el plan del ARCHIVO DE ORIGEN (anterior) no excluía la línea duplicada (${pl.fuera.map((l) => l.id).join(', ') || 'ninguna'}, ${e(dup)}); el plan regenerado en el servidor el 25/11 sí cuadra con la demo: ver (b2)`);
   cmp(`costes del plan + línea duplicada excluida (colchón ${p.colchon_pct} %)`, (pl.costes + dup) / 100, p.costes_plan);
   cmp('resultado previsto − efecto de la línea duplicada', Math.round((pl.resultado_exacto_cts - dup * (1 + p.colchon_pct / 100)) / 100), p.resultado_previsto);
   // Recuento por riesgo: informativo. El plan del servidor es una foto del momento en que se generó (con los 12 avisos y
@@ -107,6 +107,18 @@ if (!ruta) {
   for (const r of ['asumir', 'vigilar', 'mitigar']) {
     const sv = p.lineas_por_riesgo[r]; const dv = pl.porRiesgo[r];
     console.log(`INFO  (b) líneas «${r}»: ${dv.n === sv.n && Math.round(dv.importe / 100) === Math.round(sv.importe) ? 'igual que el servidor' : 'distinto del plan guardado en el servidor (foto anterior; no cambia costes ni resultado)'}`);
+  }
+}
+// ── (b2) plan regenerado en el servidor el 25/11 (A04 en «no aplica»; valores comunicados por Cowork) ──
+// El escenario inicial de la demo tiene que dar exactamente esto, al céntimo y por riesgo.
+const SERVIDOR_PLAN_25_11_REGENERADO = { costes: 102271, resultado: 13397.32, mitigar: [2, 4260], vigilar: [0, 0], asumir: [17, 98011] };
+{
+  const sv = SERVIDOR_PLAN_25_11_REGENERADO; const pl = L.plan(data, est0, data.plan.colchon_pct);
+  (pl.costes === Math.round(sv.costes * 100) ? ok : mal)(`(b2) costes del plan regenerado en el servidor: ${e(pl.costes)}`);
+  (Math.round(pl.resultado_exacto_cts) === Math.round(sv.resultado * 100) ? ok : mal)(`(b2) resultado previsto exacto: ${L.fmt(Math.round(pl.resultado_exacto_cts), { decimales: true })}`);
+  for (const r of ['mitigar', 'vigilar', 'asumir']) {
+    const [n, imp] = sv[r];
+    (pl.porRiesgo[r].n === n && pl.porRiesgo[r].importe === imp * 100 ? ok : mal)(`(b2) «${r}»: ${pl.porRiesgo[r].n} partidas, ${e(pl.porRiesgo[r].importe)}`);
   }
 }
 console.log(fallos ? `\nPARIDAD: ${fallos} FALLO(S)` : '\nPARIDAD: OK');
