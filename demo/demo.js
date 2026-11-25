@@ -49,7 +49,12 @@ function docTexto(ref, linea) {
 }
 
 // ── franja fija ──
+function haCambiado() {
+  const e0 = L.estadosIniciales(data);
+  return estado.colchon !== data.plan.colchon_pct || data.avisos.some((a) => estado.avisos[a.id] !== e0[a.id]);
+}
 function pintarFranja() {
+  $('#bloque-reinicio').hidden = !haCambiado();
   const k = L.cierre(data, estado.avisos);
   $('#f-quedo').textContent = euros(k.resultado);
   $('#f-corregido').textContent = euros(k.corregido);
@@ -63,34 +68,70 @@ function anunciar(txt) {
   setTimeout(() => { a.textContent = txt; }, 30);
 }
 
-// ── vista: lo que entró ──
+// ── vista: lo que entró (ronda 4: corta; el detalle, plegado) ──
+// Nombre de productor por familia de coste; los grupos que no caben en 6 van a «Otros servicios».
+const GRUPO = { CACHES: 'Artistas', SONIDO_LUZ_VIDEO: 'Sonido, luz y pantalla', ESCENARIOS_ESTRUCTURAS: 'Escenario y estructuras',
+  PERSONAL: 'Personal y producción', SEGURIDAD: 'Seguridad', ENERGIA: 'Energía', TECNICOS_AV: 'Técnicos', CARPAS: 'Carpas',
+  WC: 'Aseos', LIMPIEZA: 'Limpieza', RESIDUOS: 'Residuos', VALLAS: 'Vallas', SEGUROS_PERMISOS: 'Seguros y permisos',
+  TRANSPORTE: 'Transporte', ELEVACION_MAQUINARIA: 'Maquinaria' };
+const MAX_GRUPOS = 6;
+function gruposCoste() {
+  const por = new Map();
+  for (const l of data.lineas_compra) {
+    const g = por.get(l.familia) || { nombre: GRUPO[l.familia] || l.familia, total: 0, aviso: false };
+    g.total += L.c(l.importe);
+    g.aviso = g.aviso || data.avisos.some((a) => a.linea === l.id || a.linea_duplicada === l.id);
+    por.set(l.familia, g);
+  }
+  const lista = [...por.values()].sort((a, b) => b.total - a.total);
+  if (lista.length <= MAX_GRUPOS) return lista;
+  const resto = lista.slice(MAX_GRUPOS - 1);
+  return [...lista.slice(0, MAX_GRUPOS - 1), { nombre: 'Otros servicios', total: resto.reduce((t, g) => t + g.total, 0), aviso: resto.some((g) => g.aviso) }];
+}
+
 function vistaEntra(main) {
   const k = L.cierre(data, estado.avisos);
   const p = data.proyecto;
+  const grupos = gruposCoste();
+  const max = Math.max(...grupos.map((g) => g.total));
   main.append(
     h('p', { class: 'meta' }, `${fecha(p.fecha)} · ${p.sede} · aforo ${miles(p.aforo)} personas`),
     gancho(),
     comoFunciona(),
-    h('dl', { class: 'tarjetas' },
+    h('dl', { class: 'tarjetas tres' },
       h('div', { class: 'tarjeta' }, h('dt', {}, 'Ingresos'), h('dd', { class: 'num' }, euros(k.ingresos))),
       h('div', { class: 'tarjeta' }, h('dt', {}, 'Costes'), h('dd', { class: 'num' }, euros(k.costes))),
-      h('div', { class: 'tarjeta' }, h('dt', {}, 'Quedó'), h('dd', { class: 'num' }, euros(k.resultado)), h('dd', { class: 'sub' }, `margen ${String(k.margen_pct).replace('.', ',')} % sobre ingresos`))),
-    h('p', { class: 'nota' }, 'Cada cifra sale de una línea. Donde todavía no hay documento detrás, se dice.'),
+      h('div', { class: 'tarjeta' }, h('dt', {}, 'Quedó'), h('dd', { class: 'num' }, euros(k.resultado)))),
     h('h2', {}, 'Ingresos'),
-    lista(data.lineas_ingreso.map((l) => fila(l.descripcion, euros(L.c(l.importe)), docTexto(l.doc, l)))),
-    h('h2', {}, `Costes (${data.lineas_compra.length} líneas)`),
-    lista(data.lineas_compra.map((l) => fila(l.descripcion, euros(L.c(l.importe)),
-      [`${l.proveedor} · ${P.cantidadTexto(l)} · `, docTexto(l.doc, l)]))),
-    h('h2', {}, 'Documentos'),
-    lista(data.documentos.map((d) => {
-      const n = [...data.lineas_compra, ...data.lineas_ingreso].filter((l) => l.doc === d.ref).length;
-      return fila(`${d.numero} · ${tipoDoc(d)}`, euros(L.c(d.total)),
-        `${d.tercero}${d.fecha ? ` · ${fecha(d.fecha)}` : ''} · base ${euros(L.c(d.base))} (suma de sus ${n} línea${n === 1 ? '' : 's'}) + ${d.iva_pct ? `IVA ${d.iva_pct} % ${euros(L.c(d.iva))}` : 'sin IVA'}`);
+    h('ul', { class: 'lista compacta' }, data.lineas_ingreso.map((l) => h('li', { class: 'fila-c' },
+      h('span', { class: 'fila-t' }, l.descripcion, ' ', h('span', { class: 'doc-peq' }, docTexto(l.doc, l))),
+      h('span', { class: 'num' }, euros(L.c(l.importe)))))),
+    h('h2', {}, 'Costes'),
+    h('ul', { class: 'lista grupos' }, grupos.map((g) => {
+      const barra = h('span', { class: 'barra-g', 'aria-hidden': 'true' });
+      barra.style.width = `${Math.max(2, Math.round((g.total / max) * 100))}%`;   // CSSOM: permitido por la CSP
+      return h('li', { class: 'grupo' },
+        h('span', { class: 'grupo-t' }, g.nombre, g.aviso ? [' ', h('span', { class: 'aviso-tag' }, 'aviso')] : null),
+        h('span', { class: 'num' }, euros(g.total)),
+        h('span', { class: 'barra-pista' }, barra));
     })),
+    plegable(`Ver las ${data.lineas_compra.length} líneas`,
+      lista(data.lineas_compra.map((l) => fila(l.descripcion, euros(L.c(l.importe)),
+        [`${l.proveedor} · ${P.cantidadTexto(l)} · `, docTexto(l.doc, l)])))),
+    plegable(`Ver los ${data.documentos.length} documentos`,
+      lista(data.documentos.map((d) => {
+        const n = [...data.lineas_compra, ...data.lineas_ingreso].filter((l) => l.doc === d.ref).length;
+        return fila(`${d.numero} · ${tipoDoc(d)}`, euros(L.c(d.total)),
+          `${d.tercero}${d.fecha ? ` · ${fecha(d.fecha)}` : ''} · base ${euros(L.c(d.base))} (suma de sus ${n} línea${n === 1 ? '' : 's'}) + ${d.iva_pct ? `IVA ${d.iva_pct} % ${euros(L.c(d.iva))}` : 'sin IVA'}`);
+      }))),
     h('h2', {}, 'Sorpresas del evento'),
-    h('p', { class: 'nota' }, 'Estimaciones abiertas: no cambian el resultado hasta que se cierren.'),
-    lista(data.incidencias.map((i) => fila(i.titulo, `≈ ${euros(L.c(i.importe_est))}`, `${i.detalle} Lo asume: ${i.asume === 'nosotros' ? 'la productora' : 'por decidir'}.`))),
+    h('ul', { class: 'lista compacta' }, data.incidencias.map((x) => h('li', { class: 'fila-c' },
+      h('span', { class: 'fila-t' }, x.titulo), h('span', { class: 'num' }, `≈ ${euros(L.c(x.importe_est))}`)))),
   );
+}
+
+function plegable(resumen, ...contenido) {
+  return h('details', { class: 'plegable' }, h('summary', {}, resumen), ...contenido);
 }
 
 // Gancho: dos líneas con las cifras del ESTADO INICIAL (calculadas, no escritas a mano).
@@ -127,20 +168,36 @@ function fila(titulo, importe, detalle) {
     detalle ? h('p', { class: 'fila-d' }, detalle) : null);
 }
 
-// ── vista: lo que no cuadra ──
+// ── vista: lo que no cuadra (ronda 4: tres avisos a la vista; el resto y el detalle, plegados) ──
+const A_LA_VISTA = ['A01', 'A02', 'A04'];
+const NOMBRE_CORTO = { SEGURIDAD: 'Vigilante', TECNICOS_AV: 'Técnicos de sonido y luz', CARPAS: 'Carpa backstage', ENERGIA: 'Grupo electrógeno', PERSONAL: 'Dirección de producción propia' };
+const TIPO_CORTO = { factura_recibida: 'Factura', presupuesto_proveedor: 'Presupuesto', liquidacion: 'Liquidación' };
+const docCorto = (ref, minus = false) => { const d = docPorRef[ref]; const t = TIPO_CORTO[d.tipo] || d.etiqueta || 'Documento'; return `${minus ? t.toLowerCase() : t} ${d.numero}`; };
+const cantidadCorta = (l) => P.cantidadTexto(l).split(' a ')[0];
+
 function vistaNoCuadra(main) {
-  const k = L.cierre(data, estado.avisos);
+  const visibles = data.avisos.filter((a) => A_LA_VISTA.includes(a.id));
+  const resto = data.avisos.filter((a) => !A_LA_VISTA.includes(a.id));
   main.append(
-    h('p', { class: 'intro' }, 'Cada línea se compara con precios del sector y con los demás documentos. Un aviso es una pista, no una acusación: confirmar, justificar o descartar lo decides tú.'),
-    h('p', { class: 'regla-larga' }, h('strong', {}, 'Solo lo confirmado cuenta.'), ' Justificado, no aplica y por revisar no suman nunca al resultado.'),
-    h('dl', { class: 'leyenda', 'aria-label': 'Qué significa cada estado' }, [
-      ['confirmado', 'Cuenta en el resultado.'], ['detectado', 'Aún no cuenta.'],
-      ['justificado', 'Tenía motivo. No cuenta.'], ['no_aplica', 'No era comparable. No cuenta.'],
-    ].map(([e, t]) => h('div', {}, h('dt', {}, h('span', { class: `muestra m-${e}`, 'aria-hidden': 'true' }), h('span', { class: `estado est-${e}` }, ETIQUETA[e])), h('dd', {}, t)))),
-    h('dl', { class: 'resumen-estados' }, ['confirmado', 'detectado', 'justificado', 'no_aplica'].map((e) =>
-      h('div', {}, h('dt', {}, ETIQUETA[e]), h('dd', {}, `${k.n[e]} · ${euros(k[e])}`)))),
-    h('ol', { class: 'avisos' }, data.avisos.map(tarjetaAviso)),
+    h('p', { class: 'intro' }, 'Cada aviso es una pista, no una acusación: lo confirmas o lo descartas tú. Solo lo confirmado cuenta.'),
+    h('ul', { class: 'leyenda-linea', 'aria-label': 'Estados de un aviso' }, ['confirmado', 'detectado', 'justificado', 'no_aplica'].map((e) =>
+      h('li', {}, h('span', { class: `muestra m-${e}`, 'aria-hidden': 'true' }), ETIQUETA[e]))),
+    h('ol', { class: 'avisos' }, visibles.map(tarjetaAviso)),
+    plegable(`Ver ${resto.length} avisos más: justificados, descartados y menores`, h('ol', { class: 'avisos' }, resto.map(tarjetaAviso))),
   );
+}
+
+function tituloCorto(a) {
+  const l = lineaPorId[a.linea];
+  const nombre = NOMBRE_CORTO[l.familia] || l.descripcion;
+  if (a.codigo === 'D03') return `${nombre} cobrado dos veces`;
+  return `${nombre} a ${a.pagado}${a.referencia_aprox ? ` · referencia ${a.referencia_aprox}` : ` · +${a.desviacion_pct} %`}`;
+}
+
+function origenCorto(a) {
+  const l = lineaPorId[a.linea];
+  if (a.codigo === 'D03') return `${docCorto(lineaPorId[a.linea_duplicada].doc)} y ${docCorto(a.doc, true)} · ${cantidadCorta(l)}`;
+  return `${a.doc ? docCorto(a.doc) : (l.sin_doc || 'Sin documento todavía')} · ${cantidadCorta(l)}`;
 }
 
 function tarjetaAviso(a) {
@@ -151,28 +208,28 @@ function tarjetaAviso(a) {
     const dup = lineaPorId[a.linea_duplicada];
     origen.push(['Documentos', `${docPorRef[dup.doc].numero} (${tipoDoc(docPorRef[dup.doc]).toLowerCase()}) y ${docPorRef[a.doc].numero} (${tipoDoc(docPorRef[a.doc]).toLowerCase()})`]);
     origen.push(['Línea', `${l.descripcion} · ${P.cantidadTexto(l)} = ${euros(L.c(l.importe))}, en los dos`]);
-    origen.push(['Contado de más', euros(L.c(a.eur))]);
   } else {
     origen.push(['Documento', docTexto(a.doc, l)]);
     origen.push(['Línea', `${l.descripcion} · ${P.cantidadTexto(l)} = ${euros(L.c(l.importe))}`]);
     origen.push(['Pagado', a.pagado]);
     origen.push(['Por encima de la referencia', `+${a.desviacion_pct} % · ${euros(L.c(a.eur))}`]);
-    if (a.referencia_aprox) origen.push(['Referencia', `${a.referencia_aprox} (${a.n_precios} precios del sector)`]);
-    else origen.push(['Precios comparados', `${a.n_precios} del sector`]);
+    origen.push(a.referencia_aprox ? ['Referencia', `${a.referencia_aprox} (${a.n_precios} precios del sector)`] : ['Precios comparados', `${a.n_precios} del sector`]);
   }
+  origen.push(['Gravedad', a.severidad]);
   const titId = `t-${a.id}`;
-  return h('li', { class: `aviso est-${e}`, id: `aviso-${a.id}`, 'aria-labelledby': titId },
-    h('div', { class: 'aviso-cab' },
-      h('span', { class: `estado est-${e}` }, ETIQUETA[e]),
-      h('span', { class: 'codigo' }, a.codigo === 'D03' ? 'Partida duplicada' : 'Precio'),
-      h('span', { class: 'codigo' }, `Gravedad ${a.severidad}`)),
-    h('h2', { class: 'aviso-t', id: titId, tabindex: '-1' }, a.titulo),
-    a.detalle ? h('p', { class: 'aviso-d' }, a.detalle) : null,
-    h('dl', { class: 'origen' }, origen.map(([k, v]) => h('div', {}, h('dt', {}, k), h('dd', {}, v)))),
-    a.justificacion && (e === 'justificado' || e === 'no_aplica') ? h('p', { class: 'aviso-j' }, `Motivo: ${a.justificacion}`) : null,
-    h('p', { class: 'cuenta' }, e === 'confirmado' ? `Cuenta: suma ${euros(L.c(a.eur))} al resultado corregido.` : ['No cuenta en el resultado: ', h(e === 'detectado' ? 'span' : 's', { class: 'num' }, euros(L.c(a.eur)))]),
-    h('div', { class: 'acciones', role: 'group', 'aria-label': `Acciones para: ${a.titulo}` },
+  const cuenta = e === 'confirmado';
+  return h('li', { class: `aviso aviso-c est-${e}`, id: `aviso-${a.id}`, 'aria-labelledby': titId },
+    h('div', { class: 'aviso-fila' },
+      h('div', { class: 'aviso-txt' },
+        h('h2', { class: 'aviso-t', id: titId, tabindex: '-1' }, h('span', { class: `estado est-${e}` }, ETIQUETA[e]), ' ', tituloCorto(a)),
+        h('p', { class: 'aviso-o' }, origenCorto(a))),
+      h(cuenta || e === 'detectado' ? 'p' : 's', { class: 'num aviso-eur' }, `+${euros(L.c(a.eur))}`)),
+    h('div', { class: 'acciones', role: 'group', 'aria-label': `Acciones: ${tituloCorto(a)}` },
       ORDEN_ACCIONES.filter((x) => x !== e).map((x) => h('button', { type: 'button', class: `btn ${x === 'confirmado' ? 'btn-pri' : 'btn-sec'}`, 'data-aviso': a.id, 'data-estado': x, onclick: cambiarAviso }, ACCION[x]))),
+    plegable('Ver de dónde sale',
+      a.detalle ? h('p', { class: 'aviso-d' }, a.detalle) : null,
+      h('dl', { class: 'origen' }, origen.map(([k, v]) => h('div', {}, h('dt', {}, k), h('dd', {}, v)))),
+      a.justificacion ? h('p', { class: 'aviso-j' }, `Motivo: ${a.justificacion}`) : null),
   );
 }
 
@@ -184,11 +241,9 @@ function cambiarAviso(ev) {
   pintarFranja();
   const viejo = document.getElementById(`aviso-${id}`);
   viejo.replaceWith(tarjetaAviso(a));
-  const lista = document.querySelector('.resumen-estados');
-  if (lista) { const k = L.cierre(data, estado.avisos); lista.replaceWith(h('dl', { class: 'resumen-estados' }, ['confirmado', 'detectado', 'justificado', 'no_aplica'].map((e) => h('div', {}, h('dt', {}, ETIQUETA[e]), h('dd', {}, `${k.n[e]} · ${euros(k[e])}`))))); }
   document.getElementById(`t-${id}`).focus();
   const k = L.cierre(data, estado.avisos);
-  anunciar(`Aviso «${a.titulo}»: ${ETIQUETA[nuevo].toLowerCase()}. Corregido ${euros(k.corregido)}. Por revisar ${euros(k.detectado)}.`);
+  anunciar(`Aviso «${tituloCorto(a)}»: ${ETIQUETA[nuevo].toLowerCase()}. Corregido ${euros(k.corregido)}. Por revisar ${euros(k.detectado)}.`);
 }
 
 // ── vista: lo que queda (estructura de la maqueta de dirección visual: 2026 | 2027 con el colchón como paso propio) ──
@@ -277,6 +332,7 @@ function selectorColchon() {
 function cambiarColchon(ev) {
   estado.colchon = Number(ev.currentTarget.value);
   const pl = pintarPlan();
+  pintarFranja();
   anunciar(`Colchón del ${estado.colchon} %: después del colchón, ${euros(pl.resultado)}.`);
 }
 
