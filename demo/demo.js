@@ -24,7 +24,9 @@ const lineaPorId = Object.fromEntries(data.lineas_compra.map((l) => [l.id, l]));
 const docPorRef = Object.fromEntries(data.documentos.map((d) => [d.ref, d]));
 const $ = (sel) => document.querySelector(sel);
 const al = (cts) => Math.round(cts / 100) * 100;                 // al euro (solo lo que se ve)
-const euros = (cts) => L.fmt(al(cts));
+// Espacio de no separación entre cifra y unidad («216 h», «18 jornadas», «2 grupos», «3 días», «2.268 €»): no se parten.
+const nb = (txt) => String(txt).replace(/(\d) (?=(?:h|jornadas?|grupos?|días?|€|ud|viajes?|m²)(?![A-Za-zÀ-ÿ]))/g, '$1\u00A0');
+const euros = (cts) => nb(L.fmt(al(cts)));
 const fecha = (iso) => iso.split('-').reverse().join('/');
 const miles = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
@@ -74,7 +76,8 @@ const GRUPO = { CACHES: 'Artistas', SONIDO_LUZ_VIDEO: 'Sonido, luz y pantalla', 
   PERSONAL: 'Personal y producción', SEGURIDAD: 'Seguridad', ENERGIA: 'Energía', TECNICOS_AV: 'Técnicos', CARPAS: 'Carpas',
   WC: 'Aseos', LIMPIEZA: 'Limpieza', RESIDUOS: 'Residuos', VALLAS: 'Vallas', SEGUROS_PERMISOS: 'Seguros y permisos',
   TRANSPORTE: 'Transporte', ELEVACION_MAQUINARIA: 'Maquinaria' };
-const MAX_GRUPOS = 6;
+const MAX_GRUPOS = 7;                       // orientativo (Cowork, 25/11)
+const SIEMPRE_APARTE = ['ENERGIA'];         // el grupo electrógeno cobrado dos veces es la historia principal: nunca en «Otros»
 function gruposCoste() {
   const por = new Map();
   for (const l of data.lineas_compra) {
@@ -83,10 +86,14 @@ function gruposCoste() {
     g.aviso = g.aviso || data.avisos.some((a) => a.linea === l.id || a.linea_duplicada === l.id);
     por.set(l.familia, g);
   }
-  const lista = [...por.values()].sort((a, b) => b.total - a.total);
+  const lista = [...por.entries()].map(([fam, g]) => ({ ...g, fam })).sort((a, b) => b.total - a.total);
   if (lista.length <= MAX_GRUPOS) return lista;
-  const resto = lista.slice(MAX_GRUPOS - 1);
-  return [...lista.slice(0, MAX_GRUPOS - 1), { nombre: 'Otros servicios', total: resto.reduce((t, g) => t + g.total, 0), aviso: resto.some((g) => g.aviso) }];
+  const fijos = lista.filter((g) => SIEMPRE_APARTE.includes(g.fam));
+  const otros = lista.filter((g) => !SIEMPRE_APARTE.includes(g.fam));
+  const sitio = MAX_GRUPOS - 1 - fijos.length;
+  const resto = otros.slice(sitio);
+  return [...[...otros.slice(0, sitio), ...fijos].sort((a, b) => b.total - a.total),
+    { nombre: 'Otros servicios', total: resto.reduce((t, g) => t + g.total, 0), aviso: resto.some((g) => g.aviso) }];
 }
 
 function vistaEntra(main) {
@@ -221,8 +228,8 @@ function tarjetaAviso(a) {
   return h('li', { class: `aviso aviso-c est-${e}`, id: `aviso-${a.id}`, 'aria-labelledby': titId },
     h('div', { class: 'aviso-fila' },
       h('div', { class: 'aviso-txt' },
-        h('h2', { class: 'aviso-t', id: titId, tabindex: '-1' }, h('span', { class: `estado est-${e}` }, ETIQUETA[e]), ' ', tituloCorto(a)),
-        h('p', { class: 'aviso-o' }, origenCorto(a))),
+        h('h2', { class: 'aviso-t', id: titId, tabindex: '-1' }, h('span', { class: `estado est-${e}` }, ETIQUETA[e]), ' ', nb(tituloCorto(a))),
+        h('p', { class: 'aviso-o' }, nb(origenCorto(a)))),
       h(cuenta || e === 'detectado' ? 'p' : 's', { class: 'num aviso-eur' }, `+${euros(L.c(a.eur))}`)),
     h('div', { class: 'acciones', role: 'group', 'aria-label': `Acciones: ${tituloCorto(a)}` },
       ORDEN_ACCIONES.filter((x) => x !== e).map((x) => h('button', { type: 'button', class: `btn ${x === 'confirmado' ? 'btn-pri' : 'btn-sec'}`, 'data-aviso': a.id, 'data-estado': x, onclick: cambiarAviso }, ACCION[x]))),
