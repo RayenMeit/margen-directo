@@ -103,6 +103,10 @@ function vistaNoCuadra(main) {
   main.append(
     h('p', { class: 'intro' }, 'Cada línea se compara con precios del sector y con los demás documentos. Un aviso es una pista, no una acusación: confirmar, justificar o descartar lo decides tú.'),
     h('p', { class: 'regla-larga' }, h('strong', {}, 'Solo lo confirmado cuenta.'), ' Justificado, no aplica y por revisar no suman nunca al resultado.'),
+    h('dl', { class: 'leyenda', 'aria-label': 'Qué significa cada estado' }, [
+      ['confirmado', 'Cuenta en el resultado.'], ['detectado', 'Aún no cuenta.'],
+      ['justificado', 'Tenía motivo. No cuenta.'], ['no_aplica', 'No era comparable. No cuenta.'],
+    ].map(([e, t]) => h('div', {}, h('dt', {}, h('span', { class: `muestra m-${e}`, 'aria-hidden': 'true' }), h('span', { class: `estado est-${e}` }, ETIQUETA[e])), h('dd', {}, t)))),
     h('dl', { class: 'resumen-estados' }, ['confirmado', 'detectado', 'justificado', 'no_aplica'].map((e) =>
       h('div', {}, h('dt', {}, ETIQUETA[e]), h('dd', {}, `${k.n[e]} · ${euros(k[e])}`)))),
     h('ol', { class: 'avisos' }, data.avisos.map(tarjetaAviso)),
@@ -136,7 +140,7 @@ function tarjetaAviso(a) {
     a.detalle ? h('p', { class: 'aviso-d' }, a.detalle) : null,
     h('dl', { class: 'origen' }, origen.map(([k, v]) => h('div', {}, h('dt', {}, k), h('dd', {}, v)))),
     a.justificacion && (e === 'justificado' || e === 'no_aplica') ? h('p', { class: 'aviso-j' }, `Motivo: ${a.justificacion}`) : null,
-    h('p', { class: 'cuenta' }, e === 'confirmado' ? `Cuenta: suma ${euros(L.c(a.eur))} al resultado corregido.` : 'No cuenta en el resultado.'),
+    h('p', { class: 'cuenta' }, e === 'confirmado' ? `Cuenta: suma ${euros(L.c(a.eur))} al resultado corregido.` : ['No cuenta en el resultado: ', h(e === 'detectado' ? 'span' : 's', { class: 'num' }, euros(L.c(a.eur)))]),
     h('div', { class: 'acciones', role: 'group', 'aria-label': `Acciones para: ${a.titulo}` },
       ORDEN_ACCIONES.filter((x) => x !== e).map((x) => h('button', { type: 'button', class: `btn ${x === 'confirmado' ? 'btn-pri' : 'btn-sec'}`, 'data-aviso': a.id, 'data-estado': x, onclick: cambiarAviso }, ACCION[x]))),
   );
@@ -157,43 +161,67 @@ function cambiarAviso(ev) {
   anunciar(`Aviso «${a.titulo}»: ${ETIQUETA[nuevo].toLowerCase()}. Corregido ${euros(k.corregido)}. Por revisar ${euros(k.detectado)}.`);
 }
 
-// ── vista: lo que queda ──
+// ── vista: lo que queda (estructura de la maqueta de dirección visual: 2026 | 2027 con el colchón como paso propio) ──
 function vistaQueda(main) {
+  main.append(
+    h('div', { class: 'mitades' },
+      h('article', { class: 'mitad', 'aria-labelledby': 't-quedo' },
+        h('h2', { id: 't-quedo' }, h('span', { class: 'e e-verde' }, '2026'), ' Lo que te quedó'),
+        h('div', { id: 'quedo' }, bloqueQuedo())),
+      h('article', { class: 'mitad', 'aria-labelledby': 't-quedara' },
+        h('h2', { id: 't-quedara' }, h('span', { class: 'e e-verde' }, '2027'), ' Lo que te va a quedar'),
+        h('p', { class: 'meta' }, `${data.plan.nombre} · borrador`),
+        h('p', { class: 'nota' }, 'Mismo evento, al precio de referencia donde hubo aviso confirmado. Primero sin colchón; después, con él.'),
+        h('div', { id: 'plan-antes' }, cuentaAntes(L.plan(data, estado.avisos, estado.colchon))),
+        h('div', { class: 'colchon-bloque' },
+          h('p', { class: 'colchon-cab' }, h('span', { class: 'e e-papel' }, 'Colchón de imprevistos'), ' ', h('b', { class: 'num', id: 'plan-colchon' }, '')),
+          selectorColchon(),
+          h('p', { class: 'nota-papel' }, 'No es una pérdida: es dinero apartado para lo que no está en ningún presupuesto. Si no se usa, sigue siendo tuyo.')),
+        h('dl', { class: 'cuenta-corregida', id: 'plan-despues' }),
+        h('h3', {}, 'Partidas del plan, por riesgo'),
+        h('ul', { class: 'lista riesgos', id: 'plan-riesgos' }),
+        h('div', { id: 'plan-fuera' }))),
+  );
+  pintarPlan();
+}
+
+function bloqueQuedo() {
   const k = L.cierre(data, estado.avisos);
-  const pl = L.plan(data, estado.avisos, estado.colchon);
   const noSuman = [['Justificado', k.justificado], ['No aplica', k.no_aplica], ['Por revisar', k.detectado]].filter(([, v]) => v > 0)
     .map(([t, v]) => `${t.toLowerCase()} (${euros(v)})`);
-  main.append(
-    h('h2', {}, 'Cierre corregido'),
+  return [
+    h('p', { class: 'num cifra-xl' }, euros(k.corregido)),
+    h('p', { class: 'nota' }, 'Resultado del evento, corregido solo con lo confirmado.'),
     h('dl', { class: 'cuenta-corregida' },
-      h('div', {}, h('dt', {}, 'Quedó'), h('dd', { class: 'num' }, euros(k.resultado))),
-      h('div', {}, h('dt', {}, `Avisos confirmados (${k.n.confirmado})`), h('dd', { class: 'num' }, L.fmt(k.confirmado, { signo: true }))),
-      h('div', { class: 'total' }, h('dt', {}, 'Corregido'), h('dd', { class: 'num' }, euros(k.corregido)))),
-    h('p', { class: 'nota' }, noSuman.length ? `No suman: ${noSuman.join(', ')}. Solo lo confirmado cuenta.` : 'Solo lo confirmado cuenta.'),
-    h('h2', {}, 'Plan del siguiente evento'),
-    h('p', { class: 'meta' }, `${data.plan.nombre} · borrador`),
-    h('p', { class: 'nota' }, 'El plan parte del cierre: cada partida de este evento, al precio de referencia donde hubo aviso confirmado, más un colchón de imprevistos.'),
-    selectorColchon(),
-    h('dl', { class: 'tarjetas', id: 'plan-cifras' }, cifrasPlan(pl)),
-    h('h3', {}, 'Partidas por riesgo'),
-    h('ul', { class: 'lista riesgos', id: 'plan-riesgos' }, riesgos(pl)),
-    h('div', { id: 'plan-fuera' }, fueraPlan(pl)),
-  );
+      h('div', {}, h('dt', {}, 'Resultado del evento (lo que pagaste)'), h('dd', { class: 'num' }, euros(k.resultado))),
+      h('div', {}, h('dt', {}, `+ Avisos confirmados (${k.n.confirmado})`), h('dd', { class: 'num' }, L.fmt(k.confirmado, { signo: true }))),
+      h('div', { class: 'total' }, h('dt', {}, '= Lo que te quedó'), h('dd', { class: 'num' }, euros(k.corregido)))),
+    h('p', { class: 'nota' }, noSuman.length ? `No suman: ${noSuman.join(', ')}.` : 'Todo lo revisado ya está decidido.'),
+    k.detectado > 0 ? h('p', { class: 'nota' }, 'Si confirmaras también lo que está por revisar: hasta ', h('b', { class: 'num' }, euros(k.corregido + k.detectado)), '.') : null,
+  ];
+}
+
+function cuentaAntes(pl) {
+  return [h('dl', { class: 'cuenta-corregida' },
+    h('div', {}, h('dt', {}, 'Ingresos previstos'), h('dd', { class: 'num' }, euros(pl.ingresos))),
+    h('div', {}, h('dt', {}, '− Costes con precios corregidos'), h('dd', { class: 'num' }, euros(pl.costes))),
+    h('div', { class: 'total' }, h('dt', {}, '= Previsto, antes del colchón'), h('dd', { class: 'num' }, euros(pl.ingresos - pl.costes))))];
+}
+
+function pintarPlan() {
+  const pl = L.plan(data, estado.avisos, estado.colchon);
+  $('#plan-antes').replaceChildren(...cuentaAntes(pl));
+  $('#plan-colchon').textContent = `${pl.colchon_pct} % · ${L.fmt(-pl.colchon)}`;
+  $('#plan-despues').replaceChildren(h('div', { class: 'total' }, h('dt', {}, '= Después del colchón'), h('dd', { class: 'num' }, euros(pl.resultado))));
+  $('#plan-riesgos').replaceChildren(...riesgos(pl));
+  $('#plan-fuera').replaceChildren(...fueraPlan(pl));
+  return pl;
 }
 
 function fueraPlan(pl) {
   if (!pl.fuera.length) return [];
   return [h('p', { class: 'nota' }, ...pl.fuera.map((l) =>
     `Fuera del plan: ${l.descripcion} del ${tipoDoc(docPorRef[l.doc]).toLowerCase()} ${docPorRef[l.doc].numero} (${euros(L.c(l.importe))}). Es la misma partida que la factura y el aviso de partida duplicada está confirmado: se presupuesta una sola vez.`))];
-}
-
-function cifrasPlan(pl) {
-  return [
-    h('div', { class: 'tarjeta' }, h('dt', {}, 'Ingresos previstos'), h('dd', { class: 'num' }, euros(pl.ingresos))),
-    h('div', { class: 'tarjeta' }, h('dt', {}, 'Costes del plan'), h('dd', { class: 'num' }, euros(pl.costes))),
-    h('div', { class: 'tarjeta' }, h('dt', {}, `Colchón ${pl.colchon_pct} %`), h('dd', { class: 'num' }, euros(pl.colchon))),
-    h('div', { class: 'tarjeta destacada' }, h('dt', {}, 'Resultado previsto'), h('dd', { class: 'num' }, euros(pl.resultado))),
-  ];
 }
 
 function riesgos(pl) {
@@ -209,7 +237,7 @@ function riesgos(pl) {
 
 function selectorColchon() {
   return h('fieldset', { class: 'colchon' },
-    h('legend', {}, 'Colchón de imprevistos'),
+    h('legend', {}, 'Reserva para imprevistos'),
     h('div', { class: 'opciones' }, data.plan.colchones.map((v) => h('label', { class: 'opcion' },
       h('input', { type: 'radio', name: 'colchon', value: String(v), checked: v === estado.colchon, onchange: cambiarColchon }),
       h('span', {}, `${v} %`)))));
@@ -217,11 +245,8 @@ function selectorColchon() {
 
 function cambiarColchon(ev) {
   estado.colchon = Number(ev.currentTarget.value);
-  const pl = L.plan(data, estado.avisos, estado.colchon);
-  $('#plan-cifras').replaceChildren(...cifrasPlan(pl));
-  $('#plan-riesgos').replaceChildren(...riesgos(pl));
-  $('#plan-fuera').replaceChildren(...fueraPlan(pl));
-  anunciar(`Colchón del ${estado.colchon} %: resultado previsto ${euros(pl.resultado)}.`);
+  const pl = pintarPlan();
+  anunciar(`Colchón del ${estado.colchon} %: después del colchón, ${euros(pl.resultado)}.`);
 }
 
 // ── navegación por hash ──
@@ -239,6 +264,7 @@ function pintar(enfocar) {
   document.querySelectorAll('.vistas a').forEach((a) => {
     if (a.dataset.vista === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
+  $('#cierre').hidden = v !== 'queda';
   pintarFranja();
   if (enfocar) $('#titulo-vista').focus();
 }

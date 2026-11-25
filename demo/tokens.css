@@ -1,26 +1,111 @@
-/* PROVISIONAL. Se sustituye por demo/arte/tokens.css de la rama demo-arte (dirección visual) en cuanto exista.
-   Mientras tanto: colores de la marca 2026 ya publicada en la web (verde #00E6AC, morado #662181, fondo de pie #12061A),
-   Aleo para titulares, Poppins para texto y JetBrains Mono para cifras. Contrastes comprobados (texto ≥ 4,5:1). */
+/* Margen Directo · demo pública · tokens (dirección de arte, rama demo-arte, 25/11/2026)
+   Fuente: guía de estilo 2026 de Brain Streaming (marca/GUIA-ESTILO-2026.md y marca/tokens.css v1.0, 15/11/2026).
+   Este archivo SUSTITUYE a demo/tokens.css (provisional) de la rama demo-publica: mismos nombres --d-*, valores de la guía.
+   La sesión de código lo copia tal cual a demo/tokens.css. Las rutas de fuentes son relativas (fonts/…), como en demo-publica.
+
+   Reglas que estos valores imponen (brief §2–§5):
+   - Plano: sin degradados, sombras, brillos ni esquinas redondeadas (--d-radio: 0).
+   - Las tarjetas NO se separan por borde ni por tono de superficie (borde #4A2360 da 1,4:1). Se separan con bloques sólidos
+     verde o morado, reglas en «apagado» (--d-regla) y espacio.
+   - Ningún significado solo por color: cada estado lleva etiqueta de texto y una forma (bloque lleno, regla o tachado).
+   - Sin Museo ni Space Grotesk.
+   Pares de texto permitidos y sus ratios: ver CONTRASTE.md (misma carpeta). */
+
+/* ── Fuentes (OFL, autoalojadas; licencias en fonts/) ─────────────────────── */
 @font-face { font-family: 'Aleo'; font-style: normal; font-weight: 300; font-display: swap; src: url(fonts/aleo-latin-300-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Aleo'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/aleo-latin-400-normal.woff2) format('woff2'); }
 @font-face { font-family: 'Aleo'; font-style: normal; font-weight: 700; font-display: swap; src: url(fonts/aleo-latin-700-normal.woff2) format('woff2'); }
 @font-face { font-family: 'Poppins'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/poppins-400.woff2) format('woff2'); }
 @font-face { font-family: 'Poppins'; font-style: normal; font-weight: 600; font-display: swap; src: url(fonts/poppins-600.woff2) format('woff2'); }
 @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 100 800; font-display: swap; src: url(fonts/jetbrains-mono-var.woff2) format('woff2'); }
 
-:root {
-  --d-fondo: #1B0A26;
-  --d-superficie: #2A1139;
-  --d-superficie-2: #371649;
-  --d-borde: #6B3A85;
-  --d-texto: #F6F0FA;
-  --d-texto-2: #DCCFE6;
-  --d-acento: #00E6AC;
-  --d-acento-texto: #12061A;
-  --d-aviso: #FFC861;
-  --d-pie: #12061A;
-  --d-foco: #00E6AC;
-  --d-f-titular: 'Aleo', Georgia, serif;
-  --d-f-texto: 'Poppins', system-ui, sans-serif;
-  --d-f-cifra: 'JetBrains Mono', ui-monospace, monospace;
-  --d-radio: 4px;
+/* ── 1. Marca (copia literal de marca/tokens.css v1.0) ───────────────────── */
+:root{
+  --bs-mint:#00E6AC;        /* verde: la voz */
+  --bs-purple:#662181;      /* morado: el contrapunto */
+  --bs-bg:#1B0A26;          /* morado oscuro: fondo de pantalla */
+  --bs-surface:#2A1139;     /* tarjetas sobre el fondo */
+  --bs-surface-2:#371649;
+  --bs-border:#4A2360;
+  --bs-footer:#12061A;      /* pie y bloques mas oscuros */
+  --bs-ink:#2A0F3A;         /* texto sobre verde o blanco */
+  --bs-paper:#F4EEF7;       /* texto sobre oscuro */
+  --bs-text-2:#DCCFE6;      /* texto secundario sobre oscuro */
+  --bs-muted:#B6A3C4;       /* notas y pies sobre oscuro */
+  --bs-purple-2:#922181;    /* solo graficos (guia de 2016) */
+  --bs-green-2:#37BA73;     /* solo graficos (guia de 2016) */
+  --bs-cut:.6rem;           /* corte de la etiqueta en web */
+  --bs-ease:cubic-bezier(.3,.7,.2,1);
+  --f-head:'Aleo',Georgia,serif;              /* 300 y 700 · en imagen y PDF: Museo 300 */
+  --f-body:'Poppins',system-ui,sans-serif;    /* 400 y 600 */
+  --f-mono:'JetBrains Mono',ui-monospace,monospace;
 }
+
+/* ── 2. Demo: nombres --d-* (los de demo-publica; NO cambiar nombres) ────── */
+:root{
+  --d-fondo:        var(--bs-bg);        /* #1B0A26 */
+  --d-superficie:   var(--bs-surface);   /* #2A1139 · solo como fondo de texto; nunca para separar tarjetas */
+  --d-superficie-2: var(--bs-surface);   /* se iguala a la superficie: dos tonos de superficie no se distinguen (1,1:1) */
+  --d-borde:        var(--bs-muted);     /* #B6A3C4 · reglas finas visibles (7,3:1 sobre superficie). El borde #4A2360 no se usa */
+  --d-texto:        var(--bs-paper);     /* #F4EEF7 */
+  --d-texto-2:      var(--bs-text-2);    /* #DCCFE6 */
+  --d-acento:       var(--bs-mint);      /* #00E6AC · bloques llenos, botón principal */
+  --d-acento-texto: var(--bs-ink);       /* #2A0F3A · texto sobre verde (10,5:1) */
+  --d-aviso:        var(--bs-mint);      /* «Por revisar», «Sin documento todavía», «Ejemplo con datos ficticios»: verde (no hay amarillo en la guía) */
+  --d-pie:          var(--bs-footer);    /* #12061A */
+  --d-foco:         var(--bs-mint);      /* anillo de foco: 3px sólido */
+  --d-f-titular:    'Aleo', Georgia, serif;           /* titulares en 300 */
+  --d-f-texto:      'Poppins', system-ui, sans-serif;
+  --d-f-cifra:      'JetBrains Mono', ui-monospace, monospace;
+  --d-radio:        0;                   /* guía: sin esquinas redondeadas */
+}
+
+/* ── 3. Demo: añadidos (nuevos nombres, documentados) ────────────────────── */
+:root{
+  --d-morado:       var(--bs-purple);    /* #662181 · bloques «Justificado» y etiquetas; NUNCA como texto sobre fondo/superficie (1,9:1 y 1,7:1) */
+  --d-apagado:      var(--bs-muted);     /* #B6A3C4 · notas, «No aplica» tachado, ejes */
+  --d-regla:        var(--bs-muted);     /* reglas de 1px entre filas y tarjetas (separación sin tono ni borde de color) */
+  --d-corte:        var(--bs-cut);       /* .6rem · corte del paralelogramo (etiquetas, botón, cifras, final de barras) */
+  --d-ease:         var(--bs-ease);      /* único gesto por pantalla; con «reducir movimiento», nada se anima */
+
+  /* Estados de aviso (fondo / texto / etiqueta). Cada estado = color + etiqueta de texto + forma. */
+  --d-est-confirmado-fondo:  var(--bs-mint);    /* bloque lleno verde */
+  --d-est-confirmado-texto:  var(--bs-ink);     /* 10,5:1 */
+  --d-est-justificado-fondo: var(--bs-purple);  /* bloque lleno morado */
+  --d-est-justificado-texto: var(--bs-paper);   /* 8,8:1 */
+  --d-est-detectado-fondo:   var(--bs-surface); /* superficie + regla verde de 4px arriba + etiqueta verde «Por revisar» */
+  --d-est-detectado-texto:   var(--bs-paper);   /* 14,9:1 */
+  --d-est-detectado-marca:   var(--bs-mint);
+  --d-est-no_aplica-fondo:   transparent;       /* sin bloque: regla apagada arriba y texto tachado */
+  --d-est-no_aplica-texto:   var(--bs-muted);   /* 8,1:1 sobre fondo */
+
+  /* Riesgo del plan (barras): forma = longitud + etiqueta de texto; el color solo acompaña */
+  --d-riesgo-mitigar: var(--bs-mint);
+  --d-riesgo-vigilar: var(--bs-paper);
+  --d-riesgo-asumir:  var(--bs-muted);
+
+  /* Escala (rem) y medidas */
+  --d-t-cifra-xl: clamp(2.6rem, 7vw, 4.25rem);  /* cifra principal de la vista 3 */
+  --d-t-cifra-l:  clamp(1.6rem, 4vw, 2.4rem);
+  --d-t-h1:       clamp(1.9rem, 4.6vw, 3rem);    /* Aleo 300 */
+  --d-t-h2:       clamp(1.35rem, 2.8vw, 1.8rem);
+  --d-t-texto:    1rem;
+  --d-t-nota:     .875rem;
+  --d-t-etiqueta: .75rem;                        /* Aleo 400, versalitas, .09em */
+  --d-esp-1: .25rem; --d-esp-2: .5rem; --d-esp-3: .75rem; --d-esp-4: 1rem; --d-esp-5: 1.5rem; --d-esp-6: 2.5rem; --d-esp-7: 4rem;
+  --d-ancho: 72rem;          /* contenido máximo a 1280 px */
+  --d-franja-alto: 4.5rem;   /* franja fija «Quedó · Corregido · Por revisar» (móvil: 3.75rem) */
+}
+
+/* ── 4. Formas de la marca (copia de marca/tokens.css) ───────────────────── */
+.bs-etiqueta,.bs-boton{
+  clip-path:polygon(var(--bs-cut) 0,100% 0,calc(100% - var(--bs-cut)) 100%,0 100%);
+  border-radius:0;box-shadow:none;
+}
+.bs-etiqueta{display:inline-block;background:var(--bs-purple);color:#fff;
+  font:400 .78rem/1 var(--f-head);letter-spacing:.09em;text-transform:uppercase;padding:.5em 1.2em .42em}
+.bs-etiqueta.verde{background:var(--bs-mint);color:var(--bs-ink)}
+.bs-boton{display:inline-flex;align-items:center;gap:.5em;background:var(--bs-purple);color:#fff;
+  font:600 1rem/1 var(--f-body);padding:1em 1.9em;text-decoration:none}
+.bs-boton.verde{background:var(--bs-mint);color:var(--bs-ink)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

@@ -115,9 +115,13 @@ html.includes(`<meta http-equiv="Content-Security-Policy" content="${CSP}">`) ? 
 /<meta name="robots" content="noindex">/.test(html) ? ok('noindex') : mal('falta <meta name="robots" content="noindex">');
 /<html lang="es">/.test(html) ? ok('lang="es"') : mal('falta lang="es"');
 const prohibido = [/\bfetch\s*\(/, /XMLHttpRequest/, /localStorage/, /sessionStorage/, /document\.cookie/, /sendBeacon/, /\bWebSocket\b/, /\bEventSource\b/, /indexedDB/, /https?:\/\//, /\bstyle\s*=/, /<script(?![^>]*\bsrc=)[^>]*>/, /\bon[a-z]+\s*=\s*["']/];
+// Única URL externa admitida: el enlace del bloque de cierre, exacta y en un href de index.html. Cualquier otra falla.
+const URL_CIERRE = 'href="https://brainstreaming.tech/cierre/"';
+const nCierre = html.split(URL_CIERRE).length - 1;
+nCierre === 1 ? ok('una sola URL externa: el href exacto del bloque de cierre') : mal(`el href del bloque de cierre aparece ${nCierre} veces (debe ser 1)`);
 let red = 0;
 for (const p of texto.filter((p) => !p.includes(`${path.sep}tools${path.sep}`) && !path.basename(p).startsWith('LICENCIA-') && !/\.(md|json)$/.test(p))) {
-  const t = leer(p);
+  const t = p.endsWith('index.html') ? leer(p).split(URL_CIERRE).join('') : leer(p);
   for (const r of prohibido) if (r.test(t)) { mal(`${rel(p)}: patrón no permitido ${r}`); red++; }
 }
 if (!red) ok('sin red, cookies, almacenamiento, estilos o scripts en línea ni manejadores en atributos');
