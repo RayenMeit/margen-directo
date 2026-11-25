@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="robots" content="noindex">
+<title>Margen Directo · demo (maqueta de dirección de arte)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="maqueta.css">
+<script src="maqueta.js" defer></script>
+</head>
+<body>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+
+<header class="cabecera">
+  <div class="cabecera-in">
+    <img class="marca" src="logotipo/bs-logo-horizontal-fondo-oscuro.svg" alt="Brain Streaming" width="160" height="29">
+    <p class="proyecto"><span class="producto">Margen Directo</span> <span class="sep" aria-hidden="true">·</span> Festival Ría Norte 2026</p>
+  </div>
+  <nav class="vistas" aria-label="Vistas de la demo">
+    <a href="#/entra" data-vista="entra"><span class="n">1</span> <span class="largo">Lo que </span>entró</a>
+    <a href="#/no-cuadra" data-vista="no-cuadra"><span class="n">2</span> <span class="largo">Lo que </span>no cuadra</a>
+    <a href="#/queda" data-vista="queda"><span class="n">3</span> <span class="largo">Lo que te </span>quedó</a>
+  </nav>
+</header>
+
+<section class="franja" aria-label="Resumen del cierre">
+  <div class="franja-in">
+    <div class="franja-c" id="f-queda"><span class="e e-verde">Quedó</span><b class="cifra" data-f="queda"></b></div>
+    <div class="franja-c" id="f-corr"><span class="e e-morado">Corregido</span><b class="cifra" data-f="corregido"></b></div>
+    <div class="franja-c" id="f-rev"><span class="e e-papel">Por revisar</span><b class="cifra" data-f="revisar"></b><small data-f="revisar-n"></small></div>
+  </div>
+  <p class="vivo" aria-live="polite" id="vivo"></p>
+</section>
+
+<main id="contenido" class="contenido">
+
+<!-- ── Vista 1 · Lo que entró ─────────────────────────────────────────── -->
+<section class="vista" id="v-entra" aria-labelledby="t-entra">
+  <p class="ficticio">Ejemplo con datos ficticios</p>
+  <h1 id="t-entra">Lo que me mandas, <em>línea a línea</em>.</h1>
+  <p class="intro">Tres documentos de ejemplo, como los que me mandarías después de un evento, y las líneas que salen de cada uno.</p>
+
+  <ol class="proceso" aria-label="Cómo se trabaja">
+    <li><span class="e e-verde">1</span> Me los mandas</li>
+    <li><span class="e e-verde">2</span> Los vuelco yo</li>
+    <li><span class="e e-verde">3</span> Lo revisamos juntos</li>
+  </ol>
+  <p class="nda">Con tus datos reales firmamos antes un acuerdo de confidencialidad (NDA). Nada entra sin él.</p>
+
+  <div class="docs" id="docs"></div>
+
+  <h2 class="h2">Lo que todavía no tiene documento</h2>
+  <p class="intro">El <b class="cifra" data-f="pct-sindoc"></b> de los costes de este evento no tiene ningún documento detrás. Se muestra así, sin inventarle uno.</p>
+  <div class="sindoc-lista" id="sindoc"></div>
+
+  <p class="siguiente"><a href="#/no-cuadra">Siguiente: lo que no cuadra</a></p>
+</section>
+
+<!-- ── Vista 2 · Lo que no cuadra ─────────────────────────────────────── -->
+<section class="vista" id="v-no-cuadra" aria-labelledby="t-nocuadra" hidden>
+  <p class="ficticio">Ejemplo con datos ficticios</p>
+  <h1 id="t-nocuadra">Lo que no cuadra, <em>ordenado por euros</em>.</h1>
+  <p class="regla-fija"><span class="e e-verde">Solo lo confirmado cuenta</span></p>
+  <p class="intro">Cada aviso compara lo que pagaste con precios de referencia de la misma partida. Tú decides: confirmar, justificar o descartar.</p>
+  <dl class="leyenda" aria-label="Qué significa cada estado">
+    <div><dt><span class="muestra m-confirmado" aria-hidden="true"></span><span class="estado est-confirmado">Confirmado</span></dt><dd>Cuenta en el resultado.</dd></div>
+    <div><dt><span class="muestra m-detectado" aria-hidden="true"></span><span class="estado est-detectado">Por revisar</span></dt><dd>Aún no cuenta.</dd></div>
+    <div><dt><span class="muestra m-justificado" aria-hidden="true"></span><span class="estado est-justificado">Justificado</span></dt><dd>Tenía motivo. No cuenta.</dd></div>
+    <div><dt><span class="muestra m-no_aplica" aria-hidden="true"></span><span class="estado est-no_aplica">No aplica</span></dt><dd>No era comparable. No cuenta.</dd></div>
+  </dl>
+  <ol class="avisos" id="avisos"></ol>
+  <p class="siguiente"><a href="#/queda">Siguiente: lo que te quedó y lo que te va a quedar</a></p>
+</section>
+
+<!-- ── Vista 3 · Lo que te quedó · Lo que te va a quedar ─────────────── -->
+<section class="vista" id="v-queda" aria-labelledby="t-queda" hidden>
+  <p class="ficticio">Ejemplo con datos ficticios</p>
+  <h1 id="t-queda">Lo que te quedó del último evento. <em>Lo que te va a quedar</em> del siguiente.</h1>
+
+  <div class="mitades">
+    <article class="mitad" aria-labelledby="t-quedo">
+      <h2 class="h2" id="t-quedo"><span class="e e-verde">2026</span> Lo que te quedó</h2>
+      <p class="cifra cifra-xl" data-f="queda"></p>
+      <p class="nota">Resultado del evento, corregido solo con lo confirmado.</p>
+      <div class="barras" aria-hidden="true">
+        <div class="barra-fila"><span class="barra b-apagado" data-barra="base"></span><span class="barra-t">Sin corregir</span></div>
+        <div class="barra-fila"><span class="barra b-verde" data-barra="queda"></span><span class="barra-t">Corregido</span></div>
+      </div>
+      <dl class="cuenta">
+        <div><dt>Resultado del evento (lo que pagaste)</dt><dd class="cifra" data-f="base"></dd></div>
+        <div><dt>+ Avisos confirmados</dt><dd class="cifra" data-f="corregido"></dd></div>
+        <div class="total"><dt>= Lo que te quedó</dt><dd class="cifra" data-f="queda"></dd></div>
+      </dl>
+      <p class="nota">Si confirmaras también lo que está por revisar: hasta <b class="cifra" data-f="techo"></b>.</p>
+    </article>
+
+    <article class="mitad" aria-labelledby="t-quedara">
+      <h2 class="h2" id="t-quedara"><span class="e e-verde">2027</span> Lo que te va a quedar</h2>
+      <p class="nota">Mismo evento, con los precios ya corregidos. Primero sin colchón; después, con él.</p>
+      <dl class="cuenta">
+        <div><dt>Ingresos previstos</dt><dd class="cifra" data-f="p-ingresos"></dd></div>
+        <div><dt>− Costes con precios corregidos</dt><dd class="cifra" data-f="p-costes"></dd></div>
+        <div class="total"><dt>= Previsto, antes del colchón</dt><dd class="cifra cifra-l" data-f="p-antes"></dd></div>
+      </dl>
+      <div class="colchon-bloque">
+        <p><span class="e e-papel">Colchón de imprevistos</span> <b class="cifra" data-f="p-colchon"></b></p>
+        <fieldset class="opciones">
+          <legend>Reserva para imprevistos</legend>
+          <label class="opcion"><input type="radio" name="colchon" value="0"> 0 %</label>
+          <label class="opcion"><input type="radio" name="colchon" value="5"> 5 %</label>
+          <label class="opcion"><input type="radio" name="colchon" value="8" checked> 8 %</label>
+          <label class="opcion"><input type="radio" name="colchon" value="10"> 10 %</label>
+        </fieldset>
+        <p class="nota-papel">No es una pérdida: es dinero apartado para lo que no está en ningún presupuesto. Si no se usa, sigue siendo tuyo.</p>
+      </div>
+      <dl class="cuenta">
+        <div class="total"><dt>= Después del colchón</dt><dd class="cifra cifra-l" data-f="p-despues"></dd></div>
+      </dl>
+
+      <h3 class="h3">Partidas del plan, por riesgo</h3>
+      <ul class="riesgos" id="riesgos"></ul>
+    </article>
+  </div>
+
+  <aside class="cierre" aria-labelledby="t-cierre">
+    <h2 id="t-cierre">¿Lo vemos con un evento tuyo? <em>20 minutos.</em></h2>
+    <p>Me mandas un evento ya hecho y lo cerramos juntos, con un NDA firmado antes.</p>
+    <a class="btn-pri" href="https://brainstreaming.tech/cierre/">Reservar 20 minutos</a>
+  </aside>
+</section>
+
+</main>
+
+<footer class="pie">
+  <p><span class="e e-verde">Ejemplo con datos ficticios</span></p>
+  <p>No es contabilidad ni sustituye a la gestoría; solo lo confirmado cuenta.</p>
+  <p class="reinicio"><button type="button" id="reiniciar" class="btn-sec">Volver al ejemplo original</button></p>
+</footer>
+</body>
+</html>

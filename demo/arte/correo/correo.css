@@ -1,0 +1,23 @@
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--d-fondo)}
+body{width:600px;font:400 15px/1.45 var(--d-f-texto);color:var(--d-texto)}
+p{margin:0}
+.cifra{font-family:var(--d-f-cifra);font-variant-numeric:tabular-nums;font-weight:500;letter-spacing:-.01em}
+.e{display:inline-block;font:400 10.5px/1 'Aleo',Georgia,serif;letter-spacing:.09em;text-transform:uppercase;padding:.55em 1.15em .45em;
+  clip-path:polygon(var(--d-corte) 0,100% 0,calc(100% - var(--d-corte)) 100%,0 100%);white-space:nowrap;vertical-align:middle}
+.e-verde{background:var(--d-acento);color:var(--d-acento-texto)}
+.e-papel{background:var(--d-texto);color:var(--d-morado)}
+.pieza{padding:26px 30px 28px}
+.cab{display:flex;justify-content:space-between;align-items:center}
+.cab img{height:22px;width:auto;display:block}
+.proy{margin-top:14px;color:var(--d-texto-2);font-size:13px}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:20px;padding-top:18px;border-top:1px solid var(--d-regla)}
+.lab{font:300 19px/1.2 var(--d-f-titular);display:flex;align-items:center;gap:8px}
+.grande{font-size:46px;line-height:1;margin:14px 0 8px}
+.verde{color:var(--d-acento)}
+.sub{color:var(--d-apagado);font-size:12.5px;line-height:1.4}
+.sub .cifra{color:var(--d-texto-2);font-size:12px}
+.colchon{margin-top:20px;background:var(--d-morado);padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--d-texto)}
+.colchon .cifra{font-size:15px}
+.colchon .flecha{flex:1}
+.colchon .fin{font-weight:700}

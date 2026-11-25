@@ -1,0 +1,6 @@
+Texto alternativo de captura-correo-1200.png (pegar completo en el atributo alt):
+
+Ejemplo con datos ficticios de Margen Directo, Festival Ría Norte 2026. Lo que te quedó en 2026: 21.579 €, corregido solo con lo confirmado (18.723 € más 2.856 €). Lo que te va a quedar en 2027: 20.991 € con los precios corregidos, antes del colchón; con un colchón del 8 % para imprevistos (8.229 €) quedan 12.762 €.
+
+Uso: <img src="…/captura-correo-1200.png" width="600" height="340" alt="(el texto de arriba)">  · 1200 × 680 px reales, mostrar a 600 × 340.
+El correo debe funcionar sin la imagen: el texto vivo de debajo lo escribe Cowork.
