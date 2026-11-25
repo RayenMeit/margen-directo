@@ -118,7 +118,8 @@ html.includes(`<meta http-equiv="Content-Security-Policy" content="${CSP}">`) ? 
 /<html lang="es">/.test(html) ? ok('lang="es"') : mal('falta lang="es"');
 const prohibido = [/\bfetch\s*\(/, /XMLHttpRequest/, /localStorage/, /sessionStorage/, /document\.cookie/, /sendBeacon/, /\bWebSocket\b/, /\bEventSource\b/, /indexedDB/, /https?:\/\//, /\bstyle\s*=/, /<script(?![^>]*\bsrc=)[^>]*>/, /\bon[a-z]+\s*=\s*["']/];
 // Única URL externa admitida: el enlace del bloque de cierre, exacta y en un href de index.html. Cualquier otra falla.
-const URL_CIERRE = 'href="https://brainstreaming.tech/cierre/"';
+// (en el HTML, los & van escritos como &amp;; el navegador lo lee como la URL exacta con sus parámetros UTM)
+const URL_CIERRE = 'href="https://brainstreaming.tech/cierre/?utm_source=demo-margen-directo&amp;utm_medium=demo&amp;utm_campaign=demo-2026-12"';
 const nCierre = html.split(URL_CIERRE).length - 1;
 nCierre === 1 ? ok('una sola URL externa: el href exacto del bloque de cierre') : mal(`el href del bloque de cierre aparece ${nCierre} veces (debe ser 1)`);
 let red = 0;
