@@ -176,7 +176,7 @@ function fila(titulo, importe, detalle) {
 }
 
 // ── vista: lo que no cuadra (ronda 4: tres avisos a la vista; el resto y el detalle, plegados) ──
-const A_LA_VISTA = ['A01', 'A02', 'A04'];
+const A_LA_VISTA = ['A01', 'A02', 'A03'];   // A03 (justificado) se puede pasar a «Confirmar» para ver cambiar la franja
 const NOMBRE_CORTO = { SEGURIDAD: 'Vigilante', TECNICOS_AV: 'Técnicos de sonido y luz', CARPAS: 'Carpa backstage', ENERGIA: 'Grupo electrógeno', PERSONAL: 'Dirección de producción propia' };
 const TIPO_CORTO = { factura_recibida: 'Factura', presupuesto_proveedor: 'Presupuesto', liquidacion: 'Liquidación' };
 const docCorto = (ref, minus = false) => { const d = docPorRef[ref]; const t = TIPO_CORTO[d.tipo] || d.etiqueta || 'Documento'; return `${minus ? t.toLowerCase() : t} ${d.numero}`; };
@@ -190,7 +190,7 @@ function vistaNoCuadra(main) {
     h('ul', { class: 'leyenda-linea', 'aria-label': 'Estados de un aviso' }, ['confirmado', 'detectado', 'justificado', 'no_aplica'].map((e) =>
       h('li', {}, h('span', { class: `muestra m-${e}`, 'aria-hidden': 'true' }), ETIQUETA[e]))),
     h('ol', { class: 'avisos' }, visibles.map(tarjetaAviso)),
-    plegable(`Ver ${resto.length} avisos más: justificados, descartados y menores`, h('ol', { class: 'avisos' }, resto.map(tarjetaAviso))),
+    plegable(`Ver ${resto.length} avisos más: descartados y menores`, h('ol', { class: 'avisos' }, resto.map(tarjetaAviso))),
   );
 }
 
@@ -320,6 +320,7 @@ function fueraPlan(pl) {
 function riesgos(pl) {
   return ['mitigar', 'vigilar', 'asumir'].map((r) => {
     const ls = pl.lineas.filter((l) => l.riesgo === r);
+    if (!ls.length) return h('li', { class: `fila riesgo-${r}` }, h('div', { class: 'fila-cab' }, h('span', { class: 'fila-t' }, `${RIESGO[r][0]} · ninguna`)));
     return h('li', { class: `fila riesgo-${r}` },
       h('div', { class: 'fila-cab' }, h('span', { class: 'fila-t' }, `${RIESGO[r][0]} · ${ls.length} partida${ls.length === 1 ? '' : 's'}`), h('span', { class: 'num' }, euros(pl.porRiesgo[r].importe))),
       h('p', { class: 'fila-d' }, RIESGO[r][1]),

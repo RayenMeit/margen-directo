@@ -23,7 +23,8 @@ const mal = (m) => { console.log('FALLA ' + m); fallos++; };
 
 const CSP = "default-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'";
 const FICTICIOS = /^(Varios|.*\b(Ejemplo|Demo|demo)\b.*)$/;           // proveedores y terceros admitidos en data.json
-const VETADOS = [/champions\s*burger/i];                              // nombres que no pueden aparecer nunca
+// Nombres o cifras que no pueden aparecer nunca. La referencia retirada de A04 se monta por partes para no estar aquí literal.
+const VETADOS = [/champions\s*burger/i, new RegExp('(^|[^\\d.,])' + '20' + '7' + '(?![\\d])')];
 const SUFIJO = /\b((?:[A-ZÁÉÍÓÚÑ][\wÁÉÍÓÚÑáéíóúñ&'-]*\s+){1,4})(S\.?\s?L\.?U?|S\.?\s?A\.?U?|S\.?\s?Coop\.?|Ltd\.?|GmbH|Inc\.?|LLC)(?=[\s.,;:)»"']|$)/g;
 
 function archivos(dir) {
