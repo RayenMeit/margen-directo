@@ -1,0 +1,26 @@
+/* PROVISIONAL. Se sustituye por demo/arte/tokens.css de la rama demo-arte (dirección visual) en cuanto exista.
+   Mientras tanto: colores de la marca 2026 ya publicada en la web (verde #00E6AC, morado #662181, fondo de pie #12061A),
+   Aleo para titulares, Poppins para texto y JetBrains Mono para cifras. Contrastes comprobados (texto ≥ 4,5:1). */
+@font-face { font-family: 'Aleo'; font-style: normal; font-weight: 300; font-display: swap; src: url(fonts/aleo-latin-300-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Aleo'; font-style: normal; font-weight: 700; font-display: swap; src: url(fonts/aleo-latin-700-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Poppins'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/poppins-400.woff2) format('woff2'); }
+@font-face { font-family: 'Poppins'; font-style: normal; font-weight: 600; font-display: swap; src: url(fonts/poppins-600.woff2) format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 100 800; font-display: swap; src: url(fonts/jetbrains-mono-var.woff2) format('woff2'); }
+
+:root {
+  --d-fondo: #1B0A26;
+  --d-superficie: #2A1139;
+  --d-superficie-2: #371649;
+  --d-borde: #6B3A85;
+  --d-texto: #F6F0FA;
+  --d-texto-2: #DCCFE6;
+  --d-acento: #00E6AC;
+  --d-acento-texto: #12061A;
+  --d-aviso: #FFC861;
+  --d-pie: #12061A;
+  --d-foco: #00E6AC;
+  --d-f-titular: 'Aleo', Georgia, serif;
+  --d-f-texto: 'Poppins', system-ui, sans-serif;
+  --d-f-cifra: 'JetBrains Mono', ui-monospace, monospace;
+  --d-radio: 4px;
+}

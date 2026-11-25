@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "Demo pública de Margen Directo (caso ficticio). Sin dependencias: solo Node para las comprobaciones de tools/."
+}
